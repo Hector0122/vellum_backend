@@ -3,6 +3,8 @@ import cors from 'cors';
 import authRoutes from './routes/auth.routes';
 import bookRoutes from './routes/books.routes';
 import uploadRoutes from './routes/upload.routes';
+import { authenticate } from './middleware/auth';
+import { listAllHighlights } from './controllers/highlights.controller';
 import { errorHandler } from './middleware/errorHandler';
 
 const app: express.Application = express();
@@ -17,6 +19,7 @@ app.get('/health', (_req, res) => {
 app.use('/api', authRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/upload', uploadRoutes);
+app.get('/api/highlights', authenticate, listAllHighlights);
 
 app.use(errorHandler);
 

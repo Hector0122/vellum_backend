@@ -22,6 +22,7 @@ export interface BookRecord {
   file_url: string;
   file_type: 'epub' | 'pdf';
   progress_percent: number;
+  progress_cfi: string | null;
   last_opened_at: string | null;
   created_at: string;
 }

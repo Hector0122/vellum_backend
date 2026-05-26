@@ -43,3 +43,12 @@ export async function deleteHighlight(req: AuthenticatedRequest, res: Response) 
     res.status(500).json({ error: err.message });
   }
 }
+
+export async function listAllHighlights(req: AuthenticatedRequest, res: Response) {
+  try {
+    const highlights = await highlightsService.listAllHighlights(req.userId!);
+    res.json({ highlights });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}

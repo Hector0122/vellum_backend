@@ -55,6 +55,7 @@ export async function updateBook(
     description?: string;
     cover_url?: string;
     progress_percent?: number;
+    progress_cfi?: string;
     last_opened_at?: string;
   },
 ): Promise<BookRecord> {
@@ -66,6 +67,7 @@ export async function updateBook(
       ...(updates.description !== undefined && { description: updates.description }),
       ...(updates.cover_url !== undefined && { coverUrl: updates.cover_url }),
       ...(updates.progress_percent !== undefined && { progressPercent: updates.progress_percent }),
+      ...(updates.progress_cfi !== undefined && { progressCfi: updates.progress_cfi }),
       ...(updates.last_opened_at !== undefined && { lastOpenedAt: new Date(updates.last_opened_at) }),
     },
   });
@@ -94,6 +96,7 @@ function mapBook(book: any): BookRecord {
     file_url: book.fileUrl,
     file_type: book.fileType,
     progress_percent: book.progressPercent,
+    progress_cfi: book.progressCfi ?? null,
     last_opened_at: book.lastOpenedAt?.toISOString() ?? null,
     created_at: book.createdAt.toISOString(),
   };

@@ -46,6 +46,25 @@ export async function deleteHighlight(
   if (count === 0) throw new Error('Highlight not found');
 }
 
+export async function listAllHighlights(userId: string) {
+  const highlights = await prisma.highlight.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    include: { book: { select: { title: true } } },
+  });
+
+  return highlights.map((h: any) => ({
+    id: h.id,
+    user_id: h.userId,
+    book_id: h.bookId,
+    book_title: h.book.title,
+    text: h.text,
+    location: h.location,
+    color: h.color,
+    created_at: h.createdAt.toISOString(),
+  }));
+}
+
 function mapHighlight(h: any): HighlightRecord {
   return {
     id: h.id,
