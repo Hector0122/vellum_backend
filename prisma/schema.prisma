@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  displayName  String?  @map("display_name")
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  books        Book[]
+  highlights   Highlight[]
+  notes        Note[]
+
+  @@map("profiles")
+}
+
+model Book {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  title           String
+  author          String?
+  description     String?
+  coverUrl        String?   @map("cover_url")
+  fileUrl         String    @map("file_url")
+  fileType        String    @map("file_type")
+  progressPercent Int       @default(0) @map("progress_percent")
+  lastOpenedAt    DateTime? @map("last_opened_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  profile         Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  highlights      Highlight[]
+  notes           Note[]
+
+  @@map("books")
+}
+
+model Highlight {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  bookId    String   @map("book_id") @db.Uuid
+  text      String
+  location  String
+  color     String   @default("#FFD700")
+  createdAt DateTime @default(now()) @map("created_at")
+  profile   Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  notes     Note[]
+
+  @@map("highlights")
+}
+
+model Note {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  bookId      String    @map("book_id") @db.Uuid
+  highlightId String?   @map("highlight_id") @db.Uuid
+  content     String
+  createdAt   DateTime  @default(now()) @map("created_at")
+  profile     Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book        Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  highlight   Highlight? @relation(fields: [highlightId], references: [id], onDelete: Cascade)
+
+  @@map("notes")
+}
