@@ -65,8 +65,40 @@ export async function signOut(_accessToken: string): Promise<void> {
   // stateless JWT — nothing to invalidate
 }
 
-export async function resetPassword(_email: string): Promise<void> {
-  throw new Error('Password reset is not available yet');
+export async function resetPassword(email: string, newPassword: string): Promise<void> {
+  const profile = await prisma.profile.findUnique({ where: { email } });
+  if (!profile) {
+    throw new Error('No account found with this email');
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+  await prisma.profile.update({
+    where: { email },
+    data: { passwordHash },
+  });
+}
+
+export async function editProfile(
+  userId: string,
+  updates: { displayName?: string; avatarUrl?: string },
+): Promise<UserProfile> {
+  const profile = await prisma.profile.update({
+    where: { id: userId },
+    data: {
+      ...(updates.displayName !== undefined && { displayName: updates.displayName }),
+      ...(updates.avatarUrl !== undefined && { avatarUrl: updates.avatarUrl }),
+    },
+    select: {
+      id: true,
+      email: true,
+      displayName: true,
+      avatarUrl: true,
+      createdAt: true,
+    },
+  });
+
+  return mapProfile(profile);
 }
 
 export async function getProfile(userId: string): Promise<UserProfile> {

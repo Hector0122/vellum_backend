@@ -4,13 +4,24 @@ import type { NoteRecord } from '../types';
 export async function listNotes(
   userId: string,
   bookId: string,
-): Promise<NoteRecord[]> {
-  const notes = await prisma.note.findMany({
-    where: { userId, bookId },
-    orderBy: { createdAt: 'asc' },
-  });
+  limit: number = 20,
+  offset: number = 0,
+): Promise<{ notes: NoteRecord[]; total: number }> {
+  const where = { userId, bookId };
+  const [notes, total] = await Promise.all([
+    prisma.note.findMany({
+      where,
+      orderBy: { createdAt: 'asc' },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.note.count({ where }),
+  ]);
 
-  return notes.map(mapNote);
+  return {
+    notes: notes.map(mapNote),
+    total,
+  };
 }
 
 export async function createNote(
@@ -39,6 +50,60 @@ export async function deleteNote(userId: string, noteId: string): Promise<void> 
   });
 
   if (count === 0) throw new Error('Note not found');
+}
+
+export async function updateNote(
+  userId: string,
+  noteId: string,
+  updates: { content?: string; highlight_id?: string | null },
+): Promise<NoteRecord> {
+  const updated = await prisma.note.updateMany({
+    where: { id: noteId, userId },
+    data: {
+      ...(updates.content !== undefined && { content: updates.content }),
+      ...(updates.highlight_id !== undefined && { highlightId: updates.highlight_id || null }),
+    },
+  });
+
+  if (updated.count === 0) throw new Error('Note not found');
+
+  const note = await prisma.note.findUnique({
+    where: { id: noteId },
+  });
+
+  if (!note) throw new Error('Note not found');
+  return mapNote(note);
+}
+
+export async function listAllNotes(
+  userId: string,
+  limit: number = 50,
+  offset: number = 0,
+) {
+  const where = { userId };
+  const [notes, total] = await Promise.all([
+    prisma.note.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: { book: { select: { title: true } } },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.note.count({ where }),
+  ]);
+
+  return {
+    notes: notes.map((n: any) => ({
+      id: n.id,
+      user_id: n.userId,
+      book_id: n.bookId,
+      book_title: n.book.title,
+      highlight_id: n.highlightId,
+      content: n.content,
+      created_at: n.createdAt.toISOString(),
+    })),
+    total,
+  };
 }
 
 function mapNote(n: any): NoteRecord {

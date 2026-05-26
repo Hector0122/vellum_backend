@@ -8,8 +8,13 @@ import type { AuthenticatedRequest } from '../types';
 
 export async function listBooks(req: AuthenticatedRequest, res: Response) {
   try {
-    const books = await booksService.listBooks(req.userId!);
-    res.json({ books });
+    const { limit = 20, offset = 0 } = req.query;
+    const result = await booksService.listBooks(
+      req.userId!,
+      parseInt(limit as string, 10) || 20,
+      parseInt(offset as string, 10) || 0,
+    );
+    res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -104,6 +109,27 @@ export async function deleteBook(req: AuthenticatedRequest, res: Response) {
   try {
     await booksService.deleteBook(req.userId!, req.params.id);
     res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function searchBooks(req: AuthenticatedRequest, res: Response) {
+  try {
+    const { q, limit = 20, offset = 0 } = req.query;
+
+    if (!q || typeof q !== 'string') {
+      res.status(400).json({ error: 'Search query "q" is required' });
+      return;
+    }
+
+    const result = await booksService.searchBooks(
+      req.userId!,
+      q,
+      parseInt(limit as string, 10) || 20,
+      parseInt(offset as string, 10) || 0,
+    );
+    res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

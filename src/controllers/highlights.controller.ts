@@ -4,11 +4,14 @@ import type { AuthenticatedRequest } from '../types';
 
 export async function listHighlights(req: AuthenticatedRequest, res: Response) {
   try {
-    const highlights = await highlightsService.listHighlights(
+    const { limit = 20, offset = 0 } = req.query;
+    const result = await highlightsService.listHighlights(
       req.userId!,
       req.params.bookId,
+      parseInt(limit as string, 10) || 20,
+      parseInt(offset as string, 10) || 0,
     );
-    res.json({ highlights });
+    res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -44,10 +47,31 @@ export async function deleteHighlight(req: AuthenticatedRequest, res: Response) 
   }
 }
 
+export async function updateHighlight(req: AuthenticatedRequest, res: Response) {
+  try {
+    const { color } = req.body;
+
+    const highlight = await highlightsService.updateHighlight(
+      req.userId!,
+      req.params.highlightId,
+      { color },
+    );
+    res.json({ highlight });
+  } catch (err: any) {
+    const status = err.message === 'Highlight not found' ? 404 : 500;
+    res.status(status).json({ error: err.message });
+  }
+}
+
 export async function listAllHighlights(req: AuthenticatedRequest, res: Response) {
   try {
-    const highlights = await highlightsService.listAllHighlights(req.userId!);
-    res.json({ highlights });
+    const { limit = 50, offset = 0 } = req.query;
+    const result = await highlightsService.listAllHighlights(
+      req.userId!,
+      parseInt(limit as string, 10) || 50,
+      parseInt(offset as string, 10) || 0,
+    );
+    res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

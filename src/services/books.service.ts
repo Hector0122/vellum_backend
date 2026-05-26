@@ -1,13 +1,25 @@
 import { prisma } from '../lib/db';
 import type { BookRecord } from '../types';
 
-export async function listBooks(userId: string): Promise<BookRecord[]> {
-  const books = await prisma.book.findMany({
-    where: { userId },
-    orderBy: { lastOpenedAt: { sort: 'desc', nulls: 'last' } },
-  });
+export async function listBooks(
+  userId: string,
+  limit: number = 20,
+  offset: number = 0,
+): Promise<{ books: BookRecord[]; total: number }> {
+  const [books, total] = await Promise.all([
+    prisma.book.findMany({
+      where: { userId },
+      orderBy: { lastOpenedAt: { sort: 'desc', nulls: 'last' } },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.book.count({ where: { userId } }),
+  ]);
 
-  return books.map(mapBook);
+  return {
+    books: books.map(mapBook),
+    total,
+  };
 }
 
 export async function getBook(userId: string, bookId: string): Promise<BookRecord> {
@@ -83,6 +95,37 @@ export async function deleteBook(userId: string, bookId: string): Promise<void> 
   });
 
   if (count === 0) throw new Error('Book not found');
+}
+
+export async function searchBooks(
+  userId: string,
+  query: string,
+  limit: number = 20,
+  offset: number = 0,
+): Promise<{ books: BookRecord[]; total: number }> {
+  const where = {
+    userId,
+    OR: [
+      { title: { contains: query, mode: 'insensitive' as const } },
+      { author: { contains: query, mode: 'insensitive' as const } },
+      { description: { contains: query, mode: 'insensitive' as const } },
+    ],
+  };
+
+  const [books, total] = await Promise.all([
+    prisma.book.findMany({
+      where,
+      orderBy: { lastOpenedAt: { sort: 'desc', nulls: 'last' } },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.book.count({ where }),
+  ]);
+
+  return {
+    books: books.map(mapBook),
+    total,
+  };
 }
 
 function mapBook(book: any): BookRecord {

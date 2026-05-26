@@ -10,6 +10,7 @@ router.get('/:id/file', booksController.getBookFile); // auth via query param, n
 
 router.use(authenticate);
 
+router.get('/search', booksController.searchBooks);
 router.get('/', booksController.listBooks);
 router.post('/', booksController.createBook);
 router.get('/:id', booksController.getBook);

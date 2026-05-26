@@ -8,6 +8,7 @@ router.use(authenticate);
 
 router.get('/', highlightsController.listHighlights);
 router.post('/', highlightsController.createHighlight);
+router.patch('/:highlightId', highlightsController.updateHighlight);
 router.delete('/:highlightId', highlightsController.deleteHighlight);
 
 export default router;

@@ -113,9 +113,12 @@ Book {
 
 - Open instantly
 - Resume last page (CFI)
-- Swipe to turn pages
+- Swipe to turn pages (PanGestureHandler + Reanimated)
 - Tap to show/hide overlay
 - Progress tracking
+- Font customization (A-/A+ size, System/Serif/Sans/Mono family)
+- Local EPUB cache for offline reading
+- Animated highlights and color picker (Reanimated)
 
 ---
 
@@ -313,18 +316,14 @@ Private bucket. Access via backend proxy with signed URLs.
 - authentication
 - upload books
 - library (search, filters, sort, delete)
-- reader (EPUB, swipe, progress, CFI)
+- reader (EPUB, swipe, progress, CFI, font, cache)
+- highlights & notes (create, list, delete, notes per highlight)
+- animations (Reanimated: FAB spring, fade-in items, color picker)
 
 ## 🔄 Phase 2 — In progress
 
-- highlights
-- notes
-- progress syncing (CFI done, pending Railway deploy)
-
-## 📋 Phase 3 — Pending
-
-- search endpoint (backend)
-- UI polish
+- lazy loading & performance optimizations
+- analytics & haptic feedback
 
 ---
 

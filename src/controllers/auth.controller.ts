@@ -59,19 +59,38 @@ export async function signOut(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function resetPassword(req: Request, res: Response) {
-  const { email } = req.body;
+  const { email, newPassword } = req.body;
 
-  if (!email) {
-    res.status(400).json({ error: 'Email is required' });
+  if (!email || !newPassword) {
+    res.status(400).json({ error: 'Email and newPassword are required' });
+    return;
+  }
+
+  if (newPassword.length < 8) {
+    res.status(400).json({ error: 'Password must be at least 8 characters' });
     return;
   }
 
   try {
-    await authService.resetPassword(email);
+    await authService.resetPassword(email, newPassword);
     res.json({ success: true });
   } catch (err: any) {
     const status = err.message.includes('No account') ? 404 : 500;
     res.status(status).json({ error: err.message });
+  }
+}
+
+export async function editProfile(req: AuthenticatedRequest, res: Response) {
+  const { displayName, avatarUrl } = req.body;
+
+  try {
+    const profile = await authService.editProfile(req.userId!, {
+      displayName,
+      avatarUrl,
+    });
+    res.json({ user: profile });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 }
 

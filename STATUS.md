@@ -27,6 +27,8 @@
 - [x] Progress persistence (CFI guardado/restaurado)
 - [x] Overlay toggle (tap para mostrar/ocultar)
 - [x] SafeAreaView + safe zone handling
+- [x] Cache local de EPUBs (Documents/epub_cache/)
+- [x] Font customization (size +/- y family: System/Serif/Sans/Mono)
 
 ### Highlights
 - [x] CRUD (GET, POST, DELETE) en backend
@@ -34,10 +36,28 @@
 - [x] Seleccionar texto → aparece color picker
 - [x] 5 colores: Yellow, Green, Blue, Pink, Orange
 - [x] Rendering visual vía epub.js annotations
-- [x] Highlights list dentro del reader (long-press delete)
+- [x] Highlights list dentro del reader (expand para notes, long-press delete)
 - [x] HighlightsScreen global (agrupado por libro, tap abre reader)
-- [x] Highlight store en Zustand
-- [x] Botón en Library header → HighlightsScreen
+
+### Notes
+- [x] CRUD (GET, POST, DELETE) en backend
+- [x] GET /api/notes (todos los notes del user con book_title)
+- [x] Notas vinculadas a highlights (highlight_id)
+- [x] Tap en highlight → expande para ver/escribir notas
+- [x] Notes en ReaderScreen y HighlightsScreen
+- [x] Note store en Zustand
+
+### Backend Infrastructure (26 de Mayo 2026)
+- [x] Express + TypeScript
+- [x] Prisma (PostgreSQL en Supabase)
+- [x] Cloudflare R2 (presigned uploads)
+- [x] CORS configurado
+- [x] Rate limiting (auth, api, upload, password reset)
+- [x] Zod validation schemas
+- [x] Search endpoint (GET /api/books/search?q=)
+- [x] Paginación en todos los listados
+- [x] PATCH endpoints para highlights y notes
+- [x] Reset password & edit profile endpoints
 
 ### Navegación
 - [x] Auth stack (SignIn, SignUp, ForgotPassword)
@@ -45,26 +65,52 @@
 - [x] HighlightsScreen (accesible desde ícono en header)
 - [x] Reader (slide from bottom)
 - [x] Profile modal
-- [x] Express + TypeScript
-- [x] Prisma (PostgreSQL en Supabase)
-- [x] Cloudflare R2 (presigned uploads)
-- [x] CORS configurado
+
+### Frontend Stack
 - [x] React Native 0.85.3 (Fabric)
 - [x] React Navigation (native stack, sin tabs)
 - [x] SafeAreaProvider + react-native-config
+- [x] Font customization (AsyncStorage persistido)
+- [x] EPUB cache local (Documents/epub_cache/)
+- [x] CSS self-closing-comp warning fix
 
-## 🔄 En progreso / Pendiente
+### Animaciones
+- [x] react-native-reanimated v4.3.1
+- [x] FAB con spring animation (AnimatedFAB)
+- [x] Fade-in/fade-out en highlights y notes (FadeInDown.springify)
+- [x] Color picker animado (FadeIn.springify)
+- [x] Profile modal (slide nativo)
+- [x] Transición Library → Reader (slide_from_bottom nativo)
+- [x] Swipe gesture en Reader (PanGestureHandler + Reanimated)
 
-| Prioridad | Item | Tipo |
-|-----------|------|------|
-| Alta | **Deploy backend a Railway** (CFI + highlight endpoints) | Infra |
-| Alta | **Notes UI** (vincular a highlights, CRUD frontend) | Frontend |
-| Media | Search endpoint `GET /api/books/search?q=` | Backend |
-| Media | Rate limiting (ya instalado) | Backend |
-| Baja | Zod validation | Backend |
-| Baja | PATCH highlights/notes | Backend |
-| Baja | Paginación en listados | Backend |
-| Baja | Reset password / edit profile | Backend |
+---
+
+## 🔄 En Progreso
+
+### Performance & Polish (Roadmap)
+
+#### Fase 2: Lazy Loading & Optimizaciones (2-3 días)
+- [ ] Lazy load de portadas (FlatList optimization)
+- [ ] Infinite scroll en listas (highlights, notes)
+- [ ] Memo() en componentes pesados (BookCard, HighlightItem)
+- [ ] useMemo para cálculos costosos (search, filters)
+- [ ] useCallback para event handlers
+- [ ] Image caching optimization
+
+#### Fase 3: Analytics & Pulidos (1 día)
+- [ ] Integrar event tracking básico
+- [ ] Track: page views, book opens, highlights created
+- [ ] Performance monitoring (render times)
+- [ ] Haptic feedback en interacciones clave
+- [ ] Toast notifications pulidas
+
+#### Fase 4: Advanced Sync (futuro, multi-dispositivo)
+- [ ] Arquitectura local-first (SQLite / WatermelonDB)
+- [ ] Queue de cambios offline (retry con exponential backoff)
+- [ ] Sincronización en background (periodic fetch / push notifications)
+- [ ] Conflict resolution (last-write-wins o field-level merge)
+- [ ] Detección de cambios multi-device (updated_at + cursor-based sync)
+
 
 ## Stack
 
