@@ -1,8 +1,8 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from '../config/env';
 
-const s3 = new S3Client({
+export const s3 = new S3Client({
   region: 'auto',
   endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
@@ -27,4 +27,34 @@ export async function generateUploadUrl(
 
 export function getPublicUrl(objectKey: string): string {
   return `${env.R2_PUBLIC_URL}/${objectKey}`;
+}
+
+export async function getObject(objectKey: string): Promise<Buffer> {
+  const command = new GetObjectCommand({
+    Bucket: env.R2_BUCKET_NAME,
+    Key: objectKey,
+  });
+
+  const response = await s3.send(command);
+  const parts: Uint8Array[] = [];
+  for await (const part of response.Body as any) {
+    parts.push(part);
+  }
+  return Buffer.concat(parts);
+}
+
+export async function uploadBuffer(
+  objectKey: string,
+  buffer: Buffer,
+  contentType: string,
+): Promise<string> {
+  const command = new PutObjectCommand({
+    Bucket: env.R2_BUCKET_NAME,
+    Key: objectKey,
+    Body: buffer,
+    ContentType: contentType,
+  });
+
+  await s3.send(command);
+  return getPublicUrl(objectKey);
 }

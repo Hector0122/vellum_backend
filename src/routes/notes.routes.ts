@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as notesController from '../controllers/notes.controller';
 import { authenticate } from '../middleware/auth';
 
-const router = Router({ mergeParams: true });
+const router: Router = Router({ mergeParams: true });
 
 router.use(authenticate);
 

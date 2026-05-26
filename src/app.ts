@@ -5,7 +5,7 @@ import bookRoutes from './routes/books.routes';
 import uploadRoutes from './routes/upload.routes';
 import { errorHandler } from './middleware/errorHandler';
 
-const app = express();
+const app: express.Application = express();
 
 app.use(cors());
 app.use(express.json());

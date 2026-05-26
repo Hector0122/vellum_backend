@@ -4,7 +4,9 @@ import { authenticate } from '../middleware/auth';
 import highlightRoutes from '../routes/highlights.routes';
 import noteRoutes from '../routes/notes.routes';
 
-const router = Router();
+const router: Router = Router();
+
+router.get('/:id/file', booksController.getBookFile); // auth via query param, no middleware
 
 router.use(authenticate);
 
