@@ -1,13 +1,13 @@
 import rateLimit from 'express-rate-limit';
 
-// General API rate limiter (120 requests per 15 minutes)
+// General API rate limiter (600 requests per 15 minutes)
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 120,
+  max: 600,
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.method === 'GET', // Don't limit GET requests (book file proxy, etc.)
+  skip: (req) => req.method === 'GET' || req.path === '/api/analytics/track', // Don't limit GET or analytics
 });
 
 // Auth rate limiter (10 POST attempts per 15 minutes)
