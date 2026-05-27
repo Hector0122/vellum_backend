@@ -3,6 +3,7 @@ import * as booksController from '../controllers/books.controller';
 import { authenticate } from '../middleware/auth';
 import highlightRoutes from '../routes/highlights.routes';
 import noteRoutes from '../routes/notes.routes';
+import bookmarkRoutes from '../routes/bookmarks.routes';
 
 const router: Router = Router();
 
@@ -19,5 +20,6 @@ router.delete('/:id', booksController.deleteBook);
 
 router.use('/:bookId/highlights', highlightRoutes);
 router.use('/:bookId/notes', noteRoutes);
+router.use('/:bookId/bookmarks', bookmarkRoutes);
 
 export default router;

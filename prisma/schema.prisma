@@ -17,6 +17,7 @@ model Profile {
   books        Book[]
   highlights   Highlight[]
   notes        Note[]
+  bookmarks    Bookmark[]
 
   @@map("profiles")
 }
@@ -37,6 +38,7 @@ model Book {
   profile         Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
   highlights      Highlight[]
   notes           Note[]
+  bookmarks       Bookmark[]
 
   @@map("books")
 }
@@ -68,4 +70,17 @@ model Note {
   highlight   Highlight? @relation(fields: [highlightId], references: [id], onDelete: Cascade)
 
   @@map("notes")
+}
+
+model Bookmark {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  bookId    String   @map("book_id") @db.Uuid
+  cfi       String
+  label     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  profile   Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("bookmarks")
 }
