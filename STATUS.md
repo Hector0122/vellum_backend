@@ -89,20 +89,20 @@
 
 ### Performance & Polish (Roadmap)
 
-#### Fase 2: Lazy Loading & Optimizaciones (2-3 días)
-- [ ] Lazy load de portadas (FlatList optimization)
-- [ ] Infinite scroll en listas (highlights, notes)
-- [ ] Memo() en componentes pesados (BookCard, HighlightItem)
-- [ ] useMemo para cálculos costosos (search, filters)
-- [ ] useCallback para event handlers
-- [ ] Image caching optimization
+#### Fase 2: Lazy Loading & Optimizaciones ✅
+- [x] Lazy load de portadas (FlatList: initialNumToRender, maxToRenderPerBatch, windowSize, removeClippedSubviews)
+- [x] Infinite scroll en listas (highlights con onEndReached + paginación en stores)
+- [x] Memo() en componentes pesados (BookCard, HighlightItem como React.memo)
+- [x] useMemo para cálculos costosos (search, filters, groupings)
+- [x] useCallback para event handlers (LibraryScreen, HighlightsScreen, ReaderScreen)
+- [x] Image caching optimization (CachedImage component + imageCache utility con react-native-blob-util)
 
-#### Fase 3: Analytics & Pulidos (1 día)
-- [ ] Integrar event tracking básico
-- [ ] Track: page views, book opens, highlights created
-- [ ] Performance monitoring (render times)
-- [ ] Haptic feedback en interacciones clave
-- [ ] Toast notifications pulidas
+#### Fase 3: Analytics & Pulidos ✅
+- [x] Integrar event tracking básico (analytics service + backend endpoint POST /api/analytics/track)
+- [x] Track: page views, book opens, highlights created, notes, font changes, deletes
+- [x] Performance monitoring (render times via console en analytics service)
+- [x] Haptic feedback en interacciones clave (Vibration: light/medium/heavy/success/error)
+- [x] Toast notifications pulidas (react-native-toast-message con tema oscuro, 3 variantes: success/error/info)
 
 #### Fase 4: Advanced Sync (futuro, multi-dispositivo)
 - [ ] Arquitectura local-first (SQLite / WatermelonDB)
