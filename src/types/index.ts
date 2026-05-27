@@ -37,6 +37,15 @@ export interface HighlightRecord {
   created_at: string;
 }
 
+export interface BookmarkRecord {
+  id: string;
+  user_id: string;
+  book_id: string;
+  cfi: string;
+  label: string | null;
+  created_at: string;
+}
+
 export interface NoteRecord {
   id: string;
   user_id: string;

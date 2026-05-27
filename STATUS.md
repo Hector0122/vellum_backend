@@ -20,15 +20,19 @@
 - [x] Long-press delete con confirmación
 - [x] Pull-to-refresh
 - [x] FAB para upload (abajo derecha)
+- [x] Progress bar con texto de porcentaje (ej: "34%")
 
 ### Reader
 - [x] EpubReader (WebView + epubjs 0.3.93 + JSZip + PanGestureHandler)
 - [x] Proxy GET /api/books/:id/file?token= (stream desde R2)
 - [x] Progress persistence (CFI guardado/restaurado)
-- [x] Overlay toggle (tap para mostrar/ocultar)
+- [x] Overlay rediseñado como panel inferior (tap backdrop para cerrar)
+- [x] Overlay toggle: detección táctil en iframes + debounce (sin GestureDetector)
 - [x] SafeAreaView + safe zone handling
 - [x] Cache local de EPUBs (Documents/epub_cache/)
 - [x] Font customization (size +/- y family: System/Serif/Sans/Mono)
+- [x] Navegación por capítulos (TOC aplanado con indentación)
+- [x] Bookmarks: backend CRUD + frontend store + goToCfi
 
 ### Highlights
 - [x] CRUD (GET, POST, DELETE) en backend
@@ -47,17 +51,26 @@
 - [x] Notes en ReaderScreen y HighlightsScreen
 - [x] Note store en Zustand
 
+### Bookmarks
+- [x] Prisma model Bookmark (id, user_id, book_id, cfi, label, created_at)
+- [x] CRUD service + controller → /api/books/:bookId/bookmarks
+- [x] bookmarkStore (Zustand) + goToCfi en EpubReader
+- [x] Add (botón + en overlay) y navegar (tap) / eliminar (long-press)
+
 ### Backend Infrastructure (26 de Mayo 2026)
 - [x] Express + TypeScript
 - [x] Prisma (PostgreSQL en Supabase)
 - [x] Cloudflare R2 (presigned uploads)
 - [x] CORS configurado
-- [x] Rate limiting (auth, api, upload, password reset)
+- [x] Rate limiting (auth, api, upload, password reset) — apiLimiter 600 req/15min
 - [x] Zod validation schemas
 - [x] Search endpoint (GET /api/books/search?q=)
 - [x] Paginación en todos los listados
-- [x] PATCH endpoints para highlights y notes
+- [x] PATCH endpoints para highlights y notas
 - [x] Reset password & edit profile endpoints
+- [x] trust proxy = 1 (fix ERR_ERL_PERMISSIVE_TRUST_PROXY para Railway)
+- [x] start script: prisma db push (reemplaza migrate deploy)
+- [x] Bookmarks CRUD (modelo Prisma + service + controller + routes)
 
 ### Navegación
 - [x] Auth stack (SignIn, SignUp, ForgotPassword)
@@ -73,6 +86,8 @@
 - [x] Font customization (AsyncStorage persistido)
 - [x] EPUB cache local (Documents/epub_cache/)
 - [x] CSS self-closing-comp warning fix
+- [x] Theme centralizado: `src/shared/theme/colors.ts` (paleta minimalista oscura)
+- [x] Colores refactorizados en los 16 archivos del proyecto (acento `#6C63FF`, fondo `#0D0D14`)
 
 ### Animaciones
 - [x] react-native-reanimated v4.3.1
@@ -104,13 +119,50 @@
 - [x] Haptic feedback en interacciones clave (Vibration: light/medium/heavy/success/error)
 - [x] Toast notifications pulidas (react-native-toast-message con tema oscuro, 3 variantes: success/error/info)
 
-#### Fase 4: Advanced Sync (futuro, multi-dispositivo)
-- [ ] Arquitectura local-first (SQLite / WatermelonDB)
-- [ ] Queue de cambios offline (retry con exponential backoff)
-- [ ] Sincronización en background (periodic fetch / push notifications)
-- [ ] Conflict resolution (last-write-wins o field-level merge)
-- [ ] Detección de cambios multi-device (updated_at + cursor-based sync)
+#### Fase 5: AI & Widget (en progreso)
 
+##### Widget Android ✅
+- [x] Endpoint backend `GET /api/widget/book/:bookId` (libro + highlights + bookmarks)
+- [x] Endpoint backend `GET /api/widget/bookmarked-books`
+- [x] AppWidgetProvider nativo (VellumWidgetProvider.kt)
+- [x] WorkManager worker para fetch de datos (VellumWidgetUpdateWorker.kt)
+- [x] Layout del widget (cover, título, autor, progreso, highlight)
+- [x] Deep link `vellum://reader/:bookId` → abre reader desde el widget
+- [x] Módulo nativo RN (VellumWidgetModule) — configureWidget, updateWidget, hasWidget, getWidgetConfig
+- [x] WidgetConfigScreen (seleccionar libro, toggle mostrar highlights, aplicar)
+- [x] Icono de acceso en header de Library (widget-outline)
+
+##### Widget Android — pendiente
+- [ ] Build APK de prueba para verificar el widget funciona en dispositivo real
+- [ ] Ajustar diseño visual del widget (tamaños, márgenes, tipografía)
+- [ ] Mostrar carrusel de highlights en el widget (alternar highlights cada X segundos)
+
+##### AI Summaries (pendiente)
+- [ ] Resumen por IA: botón "Resumir capítulo" que envía el texto del capítulo a una API (GPT/Claude) y devuelve 3-5 líneas de resumen; se guarda asociado al capítulo/libro
+- [ ] Endpoint backend `/api/books/:id/chapter/:chapterIndex/summary` (proxy a LLM + caché)
+
+
+---
+
+## 🐛 Bugs conocidos
+
+### Android: tap colisiona con selección de texto  
+- **Síntoma**: Al hacer tap rápido en el reader, Android WebView auto-selecciona una palabra y muestra el menú del sistema ("copy, share, select all, websearch, read aloud"). Esto dispara simultáneamente el `selected` de epubjs (color picker) y el `Gesture.Tap` nativo (overlay/footer).  
+- **Intentos fallidos**: filtro por duración del toque (JS y nativo), filtro por longitud de texto (>3 chars), remover GestureDetector, detección táctil JS dentro de iframes.  
+- **Causa raíz**: Android system context menu en WebView selecciona texto automáticamente al hacer tap en contenido — no es comportamiento de epubjs, es del sistema.  
+- **Posibles soluciones a explorar**:  
+  - Doble-tap para abrir el footer `Gesture.Tap().numberOfTaps(2)`  
+  - Botón flotante persistente tipo `Aa` (evita depender de gestos)  
+  - `user-select: none` CSS en el iframe, habilitar solo vía long-press  
+  - Usar `onTouchEnd` del WebView en vez de GestureDetector
+
+---
+
+## Release Build (Android)
+- [x] Keystore generado (vellum-release.keystore, alias `vellum`)
+- [x] APK release (ejecutar manual: `./gradlew assembleRelease`)
+
+---
 
 ## Stack
 
