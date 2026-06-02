@@ -1,6 +1,5 @@
 import { prisma } from '../lib/db';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
@@ -10,6 +9,10 @@ export async function summarizeChapter(
   chapterIndex: number,
   chapterText: string,
 ) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured');
+  }
   const existing = await prisma.chapterSummary.findUnique({
     where: {
       bookId_chapterIndex: { bookId, chapterIndex },
@@ -24,7 +27,7 @@ export async function summarizeChapter(
 
   try {
     const response = await fetch(
-      `${GEMINI_URL}?key=${GEMINI_API_KEY}`,
+      `${GEMINI_URL}?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -65,9 +68,6 @@ export async function summarizeChapter(
 
     return { summary: content, cached: false };
   } catch (err: any) {
-    if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not configured');
-    }
     throw new Error(err.message || 'Failed to generate summary');
   }
 }
