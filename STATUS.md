@@ -119,7 +119,7 @@
 - [x] Haptic feedback en interacciones clave (Vibration: light/medium/heavy/success/error)
 - [x] Toast notifications pulidas (react-native-toast-message con tema oscuro, 3 variantes: success/error/info)
 
-#### Fase 5: AI & Widget (en progreso)
+#### Fase 5: AI & Widget ✅
 
 ##### Widget Android ✅
 - [x] Endpoint backend `GET /api/widget/book/:bookId` (libro + highlights + bookmarks)
@@ -132,45 +132,44 @@
 - [x] WidgetConfigScreen (seleccionar libro, aplicar al widget)
 - [x] Icono de acceso en header de Library (widget-outline)
 
-##### Warm Paper 🌿
-- [ ] Modo de lectura "papel cálido": fondo sepia/warm + texto oscuro, reduce fatiga visual
-- [ ] Toggle en el reader overlay (junto a font family/size)
-- [ ] Persistir preferencia en AsyncStorage
+##### Warm Paper 🌿 ✅
+- [x] Modo de lectura "papel cálido": fondo sepia/warm + texto oscuro, reduce fatiga visual
+- [x] Toggle en el reader overlay (junto a font family/size)
+- [x] Persistir preferencia en AsyncStorage
 
-##### Reading Stats 📊
-- [ ] Dashboard de estadísticas de lectura (nueva pantalla o sección)
-- [ ] Total de libros leídos / en progreso
-- [ ] Rachas de lectura (días consecutivos leyendo)
-- [ ] Tiempo total de lectura acumulado
+##### Reading Stats 📊 🔄
+- [x] Modelo Prisma `ReadingSession` (userId, bookId, startedAt, endedAt, durationSeconds, wordsRead)
+- [x] POST /api/stats/session → crea sesión al abrir reader
+- [x] PATCH /api/stats/session/:id → finaliza sesión (descarta si <5 min)
+- [x] GET /api/stats/streak → currentStreak, todayMinutes, totalMinutes
+- [x] Flame icon 🔥 animado en header de Library (scale bounce cuando sube racha)
+- [x] Tracking automático de sesiones en ReaderScreen (inicio al montar, fin al desmontar)
+- [ ] Dashboard de estadísticas de lectura (pantalla dedicada con gráfico semanal)
 - [ ] Gráfico semanal con minutos leídos por día
-- [ ] Endpoint backend `GET /api/stats` (agregado de sesiones de lectura)
 
-##### Tiempo Restante ⏱️
-- [ ] Mostrar tiempo estimado para terminar el capítulo actual
-- [ ] Mostrar tiempo estimado para terminar el libro
-- [ ] Cálculo basado en velocidad de lectura (palabras por minuto)
-- [ ] Barra o badge en el reader que diga "~12 min left in chapter"
+##### Tiempo Restante ⏱️ 🔄
+- [x] Mostrar tiempo estimado para terminar el capítulo actual (badge en reader, calculado en frontend)
+- [x] WPM adaptativo: se aprende de la velocidad real de lectura por capítulo (running avg 70/30)
+- [x] Mostrar tiempo estimado para terminar el libro completo (proyectado desde avg palabras por capítulo + total chapters)
+- [x] Badge compacto: `~5m in chap · ~2h 15m total`
 - [ ] Endpoint backend `GET /api/books/:id/reading-estimate`
 
-##### AI Summaries 🤖
-- [ ] Botón "Resumir capítulo" que envía el texto del capítulo a una API (GPT/Claude)
-- [ ] Devuelve 3-5 líneas de resumen; se guarda asociado al capítulo/libro
-- [ ] Endpoint backend `/api/books/:id/chapter/:chapterIndex/summary` (proxy a LLM + caché)
+##### AI Summaries 🤖 ✅
+- [x] Modelo Prisma `ChapterSummary` (bookId + chapterIndex único, cache en DB)
+- [x] Backend proxy: `/api/books/:bookId/:chapterIndex/summary` → Gemini 2.0 Flash
+- [x] Botón "AI Summary" en overlay del reader (verde `#10B981`, ícono `auto-fix`)
+- [x] Extracción de texto del capítulo vía `getChapterText()` en WebView
+- [x] Panel inferior con resumen en 3-5 bullet points (caché automático por capítulo)
 
 
 ---
 
 ## 🐛 Bugs conocidos
 
-### Android: tap colisiona con selección de texto  
-- **Síntoma**: Al hacer tap rápido en el reader, Android WebView auto-selecciona una palabra y muestra el menú del sistema ("copy, share, select all, websearch, read aloud"). Esto dispara simultáneamente el `selected` de epubjs (color picker) y el `Gesture.Tap` nativo (overlay/footer).  
-- **Intentos fallidos**: filtro por duración del toque (JS y nativo), filtro por longitud de texto (>3 chars), remover GestureDetector, detección táctil JS dentro de iframes.  
-- **Causa raíz**: Android system context menu en WebView selecciona texto automáticamente al hacer tap en contenido — no es comportamiento de epubjs, es del sistema.  
-- **Posibles soluciones a explorar**:  
-  - Doble-tap para abrir el footer `Gesture.Tap().numberOfTaps(2)`  
-  - Botón flotante persistente tipo `Aa` (evita depender de gestos)  
-  - `user-select: none` CSS en el iframe, habilitar solo vía long-press  
-  - Usar `onTouchEnd` del WebView en vez de GestureDetector
+*Sin bugs activos conocidos.*
+
+### Resueltos recientemente
+- **Android: tap colisiona con selección de texto** — Resuelto con doble-tap (`Gesture.Tap().numberOfTaps(2)`) para abrir el overlay. El tap simple dentro del iframe solo dispara `tapped` cuando no hay selección activa, y el filtro `text.length >= 9` evita selecciones accidentales del system context menu.
 
 ---
 

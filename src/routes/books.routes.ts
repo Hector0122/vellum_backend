@@ -4,6 +4,7 @@ import { authenticate } from '../middleware/auth';
 import highlightRoutes from '../routes/highlights.routes';
 import noteRoutes from '../routes/notes.routes';
 import bookmarkRoutes from '../routes/bookmarks.routes';
+import * as summariesController from '../controllers/summaries.controller';
 
 const router: Router = Router();
 
@@ -21,5 +22,6 @@ router.delete('/:id', booksController.deleteBook);
 router.use('/:bookId/highlights', highlightRoutes);
 router.use('/:bookId/notes', noteRoutes);
 router.use('/:bookId/bookmarks', bookmarkRoutes);
+router.post('/:bookId/:chapterIndex/summary', summariesController.getSummary);
 
 export default router;

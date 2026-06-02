@@ -8,16 +8,18 @@ datasource db {
 }
 
 model Profile {
-  id           String   @id @default(uuid()) @db.Uuid
-  email        String   @unique
-  passwordHash String?  @map("password_hash")
-  displayName  String?  @map("display_name")
-  avatarUrl    String?  @map("avatar_url")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id           String           @id @default(uuid()) @db.Uuid
+  email        String           @unique
+  passwordHash String?          @map("password_hash")
+  displayName  String?          @map("display_name")
+  avatarUrl    String?          @map("avatar_url")
+  createdAt    DateTime         @default(now()) @map("created_at")
   books        Book[]
   highlights   Highlight[]
   notes        Note[]
   bookmarks    Bookmark[]
+  sessions     ReadingSession[]
+  summaries    ChapterSummary[]
 
   @@map("profiles")
 }
@@ -35,10 +37,12 @@ model Book {
   progressCfi     String?   @map("progress_cfi")
   lastOpenedAt    DateTime? @map("last_opened_at")
   createdAt       DateTime  @default(now()) @map("created_at")
-  profile         Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile         Profile           @relation(fields: [userId], references: [id], onDelete: Cascade)
   highlights      Highlight[]
   notes           Note[]
   bookmarks       Bookmark[]
+  sessions        ReadingSession[]
+  summaries       ChapterSummary[]
 
   @@map("books")
 }
@@ -83,4 +87,32 @@ model Bookmark {
   book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@map("bookmarks")
+}
+
+model ReadingSession {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  bookId          String    @map("book_id") @db.Uuid
+  startedAt       DateTime  @map("started_at")
+  endedAt         DateTime? @map("ended_at")
+  durationSeconds Int       @default(0) @map("duration_seconds")
+  wordsRead       Int       @default(0) @map("words_read")
+  profile         Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book            Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("reading_sessions")
+}
+
+model ChapterSummary {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  bookId       String   @map("book_id") @db.Uuid
+  chapterIndex Int      @map("chapter_index")
+  content      String
+  createdAt    DateTime @default(now()) @map("created_at")
+  profile      Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book         Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, chapterIndex])
+  @@map("chapter_summaries")
 }
