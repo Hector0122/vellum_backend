@@ -44,6 +44,7 @@ model Book {
   sessions        ReadingSession[]
   summaries       ChapterSummary[]
 
+  @@index([userId, lastOpenedAt(sort: Desc)])
   @@map("books")
 }
 
@@ -59,6 +60,7 @@ model Highlight {
   book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   notes     Note[]
 
+  @@index([userId, bookId])
   @@map("highlights")
 }
 
@@ -73,6 +75,7 @@ model Note {
   book        Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
   highlight   Highlight? @relation(fields: [highlightId], references: [id], onDelete: Cascade)
 
+  @@index([userId, bookId])
   @@map("notes")
 }
 
@@ -86,6 +89,7 @@ model Bookmark {
   profile   Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
   book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
+  @@index([userId, bookId])
   @@map("bookmarks")
 }
 
@@ -100,6 +104,7 @@ model ReadingSession {
   profile         Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
   book            Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
+  @@index([userId, startedAt(sort: Desc)])
   @@map("reading_sessions")
 }
 

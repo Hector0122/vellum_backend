@@ -48,7 +48,10 @@ export async function endSession(
 
 export async function getStreak(userId: string) {
   const sessions = await prisma.readingSession.findMany({
-    where: { userId },
+    where: {
+      userId,
+      startedAt: { gte: new Date(Date.now() - 365 * 86400000) },
+    },
     orderBy: { startedAt: 'desc' },
     select: { startedAt: true, durationSeconds: true },
   });

@@ -12,6 +12,19 @@ export async function listBooks(
       orderBy: { lastOpenedAt: { sort: 'desc', nulls: 'last' } },
       take: limit,
       skip: offset,
+      select: {
+        id: true,
+        userId: true,
+        title: true,
+        author: true,
+        description: true,
+        coverUrl: true,
+        fileType: true,
+        progressPercent: true,
+        progressCfi: true,
+        lastOpenedAt: true,
+        createdAt: true,
+      },
     }),
     prisma.book.count({ where: { userId } }),
   ]);
@@ -71,22 +84,25 @@ export async function updateBook(
     last_opened_at?: string;
   },
 ): Promise<BookRecord> {
-  const updated = await prisma.book.updateMany({
-    where: { id: bookId, userId },
-    data: {
-      ...(updates.title !== undefined && { title: updates.title }),
-      ...(updates.author !== undefined && { author: updates.author }),
-      ...(updates.description !== undefined && { description: updates.description }),
-      ...(updates.cover_url !== undefined && { coverUrl: updates.cover_url }),
-      ...(updates.progress_percent !== undefined && { progressPercent: updates.progress_percent }),
-      ...(updates.progress_cfi !== undefined && { progressCfi: updates.progress_cfi }),
-      ...(updates.last_opened_at !== undefined && { lastOpenedAt: new Date(updates.last_opened_at) }),
-    },
-  });
+  try {
+    const updated = await prisma.book.update({
+      where: { id: bookId, userId },
+      data: {
+        ...(updates.title !== undefined && { title: updates.title }),
+        ...(updates.author !== undefined && { author: updates.author }),
+        ...(updates.description !== undefined && { description: updates.description }),
+        ...(updates.cover_url !== undefined && { coverUrl: updates.cover_url }),
+        ...(updates.progress_percent !== undefined && { progressPercent: updates.progress_percent }),
+        ...(updates.progress_cfi !== undefined && { progressCfi: updates.progress_cfi }),
+        ...(updates.last_opened_at !== undefined && { lastOpenedAt: new Date(updates.last_opened_at) }),
+      },
+    });
 
-  if (updated.count === 0) throw new Error('Book not found');
-
-  return getBook(userId, bookId);
+    return mapBook(updated);
+  } catch (err: any) {
+    if (err?.code === 'P2025') throw new Error('Book not found');
+    throw err;
+  }
 }
 
 export async function deleteBook(userId: string, bookId: string): Promise<void> {
@@ -118,6 +134,19 @@ export async function searchBooks(
       orderBy: { lastOpenedAt: { sort: 'desc', nulls: 'last' } },
       take: limit,
       skip: offset,
+      select: {
+        id: true,
+        userId: true,
+        title: true,
+        author: true,
+        description: true,
+        coverUrl: true,
+        fileType: true,
+        progressPercent: true,
+        progressCfi: true,
+        lastOpenedAt: true,
+        createdAt: true,
+      },
     }),
     prisma.book.count({ where }),
   ]);
@@ -136,7 +165,7 @@ function mapBook(book: any): BookRecord {
     author: book.author,
     description: book.description,
     cover_url: book.coverUrl,
-    file_url: book.fileUrl,
+    file_url: book.fileUrl ?? null,
     file_type: book.fileType,
     progress_percent: book.progressPercent,
     progress_cfi: book.progressCfi ?? null,

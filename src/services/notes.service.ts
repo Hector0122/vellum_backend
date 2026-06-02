@@ -57,22 +57,20 @@ export async function updateNote(
   noteId: string,
   updates: { content?: string; highlight_id?: string | null },
 ): Promise<NoteRecord> {
-  const updated = await prisma.note.updateMany({
-    where: { id: noteId, userId },
-    data: {
-      ...(updates.content !== undefined && { content: updates.content }),
-      ...(updates.highlight_id !== undefined && { highlightId: updates.highlight_id || null }),
-    },
-  });
+  try {
+    const note = await prisma.note.update({
+      where: { id: noteId, userId },
+      data: {
+        ...(updates.content !== undefined && { content: updates.content }),
+        ...(updates.highlight_id !== undefined && { highlightId: updates.highlight_id || null }),
+      },
+    });
 
-  if (updated.count === 0) throw new Error('Note not found');
-
-  const note = await prisma.note.findUnique({
-    where: { id: noteId },
-  });
-
-  if (!note) throw new Error('Note not found');
-  return mapNote(note);
+    return mapNote(note);
+  } catch (err: any) {
+    if (err?.code === 'P2025') throw new Error('Note not found');
+    throw err;
+  }
 }
 
 export async function listAllNotes(

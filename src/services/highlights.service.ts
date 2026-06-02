@@ -62,21 +62,19 @@ export async function updateHighlight(
   highlightId: string,
   updates: { color?: string },
 ): Promise<HighlightRecord> {
-  const updated = await prisma.highlight.updateMany({
-    where: { id: highlightId, userId },
-    data: {
-      ...(updates.color !== undefined && { color: updates.color }),
-    },
-  });
+  try {
+    const highlight = await prisma.highlight.update({
+      where: { id: highlightId, userId },
+      data: {
+        ...(updates.color !== undefined && { color: updates.color }),
+      },
+    });
 
-  if (updated.count === 0) throw new Error('Highlight not found');
-
-  const highlight = await prisma.highlight.findUnique({
-    where: { id: highlightId },
-  });
-
-  if (!highlight) throw new Error('Highlight not found');
-  return mapHighlight(highlight);
+    return mapHighlight(highlight);
+  } catch (err: any) {
+    if (err?.code === 'P2025') throw new Error('Highlight not found');
+    throw err;
+  }
 }
 
 export async function listAllHighlights(

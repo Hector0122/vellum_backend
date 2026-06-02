@@ -12,30 +12,41 @@ async function callGroq(prompt: string): Promise<string> {
     throw new Error('GROQ_API_KEY is not configured');
   }
 
-  const response = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.4,
-      max_tokens: 512,
-    }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Groq API error: ${response.status} — ${err.slice(0, 200)}`);
+  try {
+    const response = await fetch(GROQ_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.4,
+        max_tokens: 512,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Groq API error: ${response.status} — ${err.slice(0, 200)}`);
+    }
+
+    const data = (await response.json()) as {
+      choices?: { message?: { content?: string } }[];
+    };
+
+    return data.choices?.[0]?.message?.content || 'No summary generated.';
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
   }
-
-  const data = (await response.json()) as {
-    choices?: { message?: { content?: string } }[];
-  };
-
-  return data.choices?.[0]?.message?.content || 'No summary generated.';
 }
 
 async function callGemini(prompt: string): Promise<string> {
@@ -44,39 +55,50 @@ async function callGemini(prompt: string): Promise<string> {
     throw new Error('GEMINI_API_KEY is not configured');
   }
 
-  const response = await fetch(
-    `${GEMINI_URL}?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: prompt }],
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+
+  try {
+    const response = await fetch(
+      `${GEMINI_URL}?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 512,
           },
-        ],
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 512,
-        },
-      }),
-    },
-  );
+        }),
+        signal: controller.signal,
+      },
+    );
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Gemini API error: ${response.status} — ${err.slice(0, 200)}`);
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Gemini API error: ${response.status} — ${err.slice(0, 200)}`);
+    }
+
+    const data = (await response.json()) as {
+      candidates?: { content?: { parts?: { text?: string }[] } }[];
+    };
+
+    const content =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      'No summary generated.';
+
+    return content;
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
   }
-
-  const data = (await response.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
-  };
-
-  const content =
-    data.candidates?.[0]?.content?.parts?.[0]?.text ||
-    'No summary generated.';
-
-  return content;
 }
 
 export async function summarizeChapter(

@@ -86,7 +86,7 @@
 - [x] Font customization (AsyncStorage persistido)
 - [x] EPUB cache local (Documents/epub_cache/)
 - [x] CSS self-closing-comp warning fix
-- [x] Theme centralizado: `src/shared/theme/colors.ts` (paleta minimalista oscura)
+- [x] Theme centralizado: `src/shared/theme/colors.ts` (paleta minimalista clara, fondo `#F8F5EF`)
 - [x] Colores refactorizados en los 16 archivos del proyecto (acento `#6C63FF`, fondo `#0D0D14`)
 
 ### Animaciones
@@ -117,7 +117,7 @@
 - [x] Track: page views, book opens, highlights created, notes, font changes, deletes
 - [x] Performance monitoring (render times via console en analytics service)
 - [x] Haptic feedback en interacciones clave (Vibration: light/medium/heavy/success/error)
-- [x] Toast notifications pulidas (react-native-toast-message con tema oscuro, 3 variantes: success/error/info)
+- [x] Toast notifications pulidas (react-native-toast-message con fondos sólidos opacos, 3 variantes: success/error/info)
 
 #### Fase 5: AI & Widget ✅
 
@@ -132,10 +132,8 @@
 - [x] WidgetConfigScreen (seleccionar libro, aplicar al widget)
 - [x] Icono de acceso en header de Library (widget-outline)
 
-##### Warm Paper 🌿 ✅
-- [x] Modo de lectura "papel cálido": fondo sepia/warm + texto oscuro, reduce fatiga visual
-- [x] Toggle en el reader overlay (junto a font family/size)
-- [x] Persistir preferencia en AsyncStorage
+##### Warm Paper 🌿 ❌
+- [x] ~~Modo de lectura "papel cálido": fondo sepia/warm + texto oscuro~~ — **Removido. Fondo #F5ECD7 por defecto.**
 
 ##### Reading Stats 📊 🔄
 - [x] Modelo Prisma `ReadingSession` (userId, bookId, startedAt, endedAt, durationSeconds, wordsRead)
@@ -144,22 +142,20 @@
 - [x] GET /api/stats/streak → currentStreak, todayMinutes, totalMinutes
 - [x] Flame icon 🔥 animado en header de Library (scale bounce cuando sube racha)
 - [x] Tracking automático de sesiones en ReaderScreen (inicio al montar, fin al desmontar)
-- [ ] Dashboard de estadísticas de lectura (pantalla dedicada con gráfico semanal)
-- [ ] Gráfico semanal con minutos leídos por día
-
 ##### Tiempo Restante ⏱️ 🔄
 - [x] Mostrar tiempo estimado para terminar el capítulo actual (badge en reader, calculado en frontend)
 - [x] WPM adaptativo: se aprende de la velocidad real de lectura por capítulo (running avg 70/30)
 - [x] Mostrar tiempo estimado para terminar el libro completo (proyectado desde avg palabras por capítulo + total chapters)
 - [x] Badge compacto: `~5m in chap · ~2h 15m total`
-- [ ] Endpoint backend `GET /api/books/:id/reading-estimate`
 
 ##### AI Summaries 🤖 ✅
 - [x] Modelo Prisma `ChapterSummary` (bookId + chapterIndex único, cache en DB)
-- [x] Backend proxy: `/api/books/:bookId/:chapterIndex/summary` → Gemini 2.0 Flash
+- [x] Backend proxy: Groq (llama-3.1-8b-instant) como primario, Gemini 2.0 Flash como fallback
+- [x] Fallback automático: si Groq falla → Gemini automáticamente (si ambos fallan → error amigable)
 - [x] Botón "AI Summary" en overlay del reader (verde `#10B981`, ícono `auto-fix`)
 - [x] Extracción de texto del capítulo vía `getChapterText()` en WebView
-- [x] Panel inferior con resumen en 3-5 bullet points (caché automático por capítulo)
+- [x] Panel inferior con resumen en 3-5 bullet points, scrollable (ScrollView con maxHeight 350)
+- [x] Caché automático por capítulo en DB
 
 
 ---
@@ -175,7 +171,8 @@
 
 ## Release Build (Android)
 - [x] Keystore generado (vellum-release.keystore, alias `vellum`)
-- [x] APK release (ejecutar manual: `./gradlew assembleRelease`)
+- [x] APK release generado (`./gradlew assembleRelease`)
+- [x] Instalado en dispositivo vía ADB
 
 ---
 
