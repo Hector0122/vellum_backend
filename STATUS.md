@@ -125,20 +125,36 @@
 - [x] Endpoint backend `GET /api/widget/book/:bookId` (libro + highlights + bookmarks)
 - [x] Endpoint backend `GET /api/widget/bookmarked-books`
 - [x] AppWidgetProvider nativo (VellumWidgetProvider.kt)
-- [x] WorkManager worker para fetch de datos (VellumWidgetUpdateWorker.kt)
-- [x] Layout del widget (cover, título, autor, progreso, highlight)
+- [x] Layout del widget: título, highlight, dots indicadores
+- [x] Carrusel automático (AlarmManager, rota cada 5s entre highlights)
 - [x] Deep link `vellum://reader/:bookId` → abre reader desde el widget
-- [x] Módulo nativo RN (VellumWidgetModule) — configureWidget, updateWidget, hasWidget, getWidgetConfig
-- [x] WidgetConfigScreen (seleccionar libro, toggle mostrar highlights, aplicar)
+- [x] Módulo nativo RN (VellumWidgetModule)
+- [x] WidgetConfigScreen (seleccionar libro, aplicar al widget)
 - [x] Icono de acceso en header de Library (widget-outline)
 
-##### Widget Android — pendiente
-- [ ] Build APK de prueba para verificar el widget funciona en dispositivo real
-- [ ] Ajustar diseño visual del widget (tamaños, márgenes, tipografía)
-- [ ] Mostrar carrusel de highlights en el widget (alternar highlights cada X segundos)
+##### Warm Paper 🌿
+- [ ] Modo de lectura "papel cálido": fondo sepia/warm + texto oscuro, reduce fatiga visual
+- [ ] Toggle en el reader overlay (junto a font family/size)
+- [ ] Persistir preferencia en AsyncStorage
 
-##### AI Summaries (pendiente)
-- [ ] Resumen por IA: botón "Resumir capítulo" que envía el texto del capítulo a una API (GPT/Claude) y devuelve 3-5 líneas de resumen; se guarda asociado al capítulo/libro
+##### Reading Stats 📊
+- [ ] Dashboard de estadísticas de lectura (nueva pantalla o sección)
+- [ ] Total de libros leídos / en progreso
+- [ ] Rachas de lectura (días consecutivos leyendo)
+- [ ] Tiempo total de lectura acumulado
+- [ ] Gráfico semanal con minutos leídos por día
+- [ ] Endpoint backend `GET /api/stats` (agregado de sesiones de lectura)
+
+##### Tiempo Restante ⏱️
+- [ ] Mostrar tiempo estimado para terminar el capítulo actual
+- [ ] Mostrar tiempo estimado para terminar el libro
+- [ ] Cálculo basado en velocidad de lectura (palabras por minuto)
+- [ ] Barra o badge en el reader que diga "~12 min left in chapter"
+- [ ] Endpoint backend `GET /api/books/:id/reading-estimate`
+
+##### AI Summaries 🤖
+- [ ] Botón "Resumir capítulo" que envía el texto del capítulo a una API (GPT/Claude)
+- [ ] Devuelve 3-5 líneas de resumen; se guarda asociado al capítulo/libro
 - [ ] Endpoint backend `/api/books/:id/chapter/:chapterIndex/summary` (proxy a LLM + caché)
 
 
