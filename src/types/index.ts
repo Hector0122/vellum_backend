@@ -21,9 +21,25 @@ export interface BookRecord {
   cover_url: string | null;
   file_url: string;
   file_type: 'epub' | 'pdf';
+  status: 'unread' | 'reading' | 'read';
+  genres: string[];
   progress_percent: number;
   progress_cfi: string | null;
   last_opened_at: string | null;
+  created_at: string;
+}
+
+export interface BookSuggestionRecord {
+  id: string;
+  user_id: string;
+  title: string;
+  author: string | null;
+  synopsis: string | null;
+  reason: string | null;
+  genres: string[];
+  source_books: string[];
+  status: 'suggested' | 'want_to_read' | 'dismissed';
+  expires_at: string;
   created_at: string;
 }
 

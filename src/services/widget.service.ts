@@ -38,6 +38,8 @@ export async function getWidgetData(
       cover_url: book.coverUrl,
       file_url: book.fileUrl,
       file_type: book.fileType as 'epub' | 'pdf',
+      status: (book.status || 'unread') as 'unread' | 'reading' | 'read',
+      genres: book.genres || [],
       progress_percent: book.progressPercent,
       progress_cfi: book.progressCfi ?? null,
       last_opened_at: book.lastOpenedAt?.toISOString() ?? null,
@@ -69,6 +71,8 @@ export interface BookmarkedBook {
   title: string;
   author: string | null;
   cover_url: string | null;
+  status: string;
+  genres: string[];
   progress_percent: number;
   progress_cfi: string | null;
   last_opened_at: string | null;
@@ -96,6 +100,8 @@ export async function listBookmarkedBooks(
     title: b.title,
     author: b.author,
     cover_url: b.coverUrl,
+    status: b.status || 'unread',
+    genres: b.genres || [],
     progress_percent: b.progressPercent,
     progress_cfi: b.progressCfi ?? null,
     last_opened_at: b.lastOpenedAt?.toISOString() ?? null,

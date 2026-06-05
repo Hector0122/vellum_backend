@@ -54,7 +54,8 @@ export async function createBook(req: AuthenticatedRequest, res: Response) {
     });
     res.status(201).json({ book });
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    const status = err.message === 'DUPLICATE_BOOK' ? 409 : 500;
+    res.status(status).json({ error: err.message === 'DUPLICATE_BOOK' ? 'Ya tienes un libro con este título en tu biblioteca.' : err.message });
   }
 }
 
@@ -130,6 +131,15 @@ export async function searchBooks(req: AuthenticatedRequest, res: Response) {
       parseInt(offset as string, 10) || 0,
     );
     res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function cleanupOrphans(_req: AuthenticatedRequest, res: Response) {
+  try {
+    const result = await booksService.cleanupOrphanedObjects();
+    res.json({ success: true, ...result });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

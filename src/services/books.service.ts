@@ -1,4 +1,5 @@
 import { prisma } from '../lib/db';
+import { extractObjectKey, deleteObject, listObjectKeys } from '../lib/r2';
 import type { BookRecord } from '../types';
 
 export async function listBooks(
@@ -20,6 +21,8 @@ export async function listBooks(
         description: true,
         coverUrl: true,
         fileType: true,
+        status: true,
+        genres: true,
         progressPercent: true,
         progressCfi: true,
         lastOpenedAt: true,
@@ -55,6 +58,14 @@ export async function createBook(
     file_type: 'epub' | 'pdf';
   },
 ): Promise<BookRecord> {
+  const existing = await prisma.book.findFirst({
+    where: { userId, title: book.title },
+  });
+
+  if (existing) {
+    throw new Error('DUPLICATE_BOOK');
+  }
+
   const created = await prisma.book.create({
     data: {
       userId,
@@ -79,23 +90,32 @@ export async function updateBook(
     author?: string;
     description?: string;
     cover_url?: string;
+    status?: 'unread' | 'reading' | 'read';
     progress_percent?: number;
     progress_cfi?: string;
     last_opened_at?: string;
   },
 ): Promise<BookRecord> {
   try {
+    const data: any = {};
+    if (updates.title !== undefined) data.title = updates.title;
+    if (updates.author !== undefined) data.author = updates.author;
+    if (updates.description !== undefined) data.description = updates.description;
+    if (updates.cover_url !== undefined) data.coverUrl = updates.cover_url;
+    if (updates.status !== undefined) data.status = updates.status;
+    if (updates.progress_percent !== undefined) {
+      data.progressPercent = updates.progress_percent;
+      // Auto-mark as read when reaching 100%
+      if (updates.progress_percent >= 100) {
+        data.status = 'read';
+      }
+    }
+    if (updates.progress_cfi !== undefined) data.progressCfi = updates.progress_cfi;
+    if (updates.last_opened_at !== undefined) data.lastOpenedAt = new Date(updates.last_opened_at);
+
     const updated = await prisma.book.update({
       where: { id: bookId, userId },
-      data: {
-        ...(updates.title !== undefined && { title: updates.title }),
-        ...(updates.author !== undefined && { author: updates.author }),
-        ...(updates.description !== undefined && { description: updates.description }),
-        ...(updates.cover_url !== undefined && { coverUrl: updates.cover_url }),
-        ...(updates.progress_percent !== undefined && { progressPercent: updates.progress_percent }),
-        ...(updates.progress_cfi !== undefined && { progressCfi: updates.progress_cfi }),
-        ...(updates.last_opened_at !== undefined && { lastOpenedAt: new Date(updates.last_opened_at) }),
-      },
+      data,
     });
 
     return mapBook(updated);
@@ -106,11 +126,27 @@ export async function updateBook(
 }
 
 export async function deleteBook(userId: string, bookId: string): Promise<void> {
-  const { count } = await prisma.book.deleteMany({
+  const book = await prisma.book.findFirst({
     where: { id: bookId, userId },
+    select: { fileUrl: true, coverUrl: true },
   });
 
-  if (count === 0) throw new Error('Book not found');
+  if (!book) throw new Error('Book not found');
+
+  // Delete files from R2
+  const keys: string[] = [];
+  const fileKey = extractObjectKey(book.fileUrl);
+  if (fileKey) keys.push(fileKey);
+  
+  const coverKey = book.coverUrl ? extractObjectKey(book.coverUrl) : null;
+  if (coverKey) keys.push(coverKey);
+
+  await Promise.allSettled(keys.map((key) => deleteObject(key)));
+
+  // Delete DB record
+  await prisma.book.deleteMany({
+    where: { id: bookId, userId },
+  });
 }
 
 export async function searchBooks(
@@ -142,6 +178,8 @@ export async function searchBooks(
         description: true,
         coverUrl: true,
         fileType: true,
+        status: true,
+        genres: true,
         progressPercent: true,
         progressCfi: true,
         lastOpenedAt: true,
@@ -167,9 +205,38 @@ function mapBook(book: any): BookRecord {
     cover_url: book.coverUrl,
     file_url: book.fileUrl ?? null,
     file_type: book.fileType,
+    status: book.status || 'unread',
+    genres: book.genres || [],
     progress_percent: book.progressPercent,
     progress_cfi: book.progressCfi ?? null,
     last_opened_at: book.lastOpenedAt?.toISOString() ?? null,
     created_at: book.createdAt.toISOString(),
   };
+}
+
+export async function cleanupOrphanedObjects(): Promise<{ deleted: number }> {
+  // Get all referenced URLs from DB
+  const books = await prisma.book.findMany({
+    select: { fileUrl: true, coverUrl: true },
+  });
+
+  const referencedKeys = new Set<string>();
+  for (const book of books) {
+    const fileKey = extractObjectKey(book.fileUrl);
+    if (fileKey) referencedKeys.add(fileKey);
+
+    const coverKey = book.coverUrl ? extractObjectKey(book.coverUrl) : null;
+    if (coverKey) referencedKeys.add(coverKey);
+  }
+
+  // Get all R2 objects
+  const allKeys = await listObjectKeys();
+
+  // Find orphans
+  const orphans = allKeys.filter((key) => !referencedKeys.has(key));
+
+  // Delete orphans
+  await Promise.allSettled(orphans.map((key) => deleteObject(key)));
+
+  return { deleted: orphans.length };
 }

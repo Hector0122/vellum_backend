@@ -15,12 +15,14 @@
 - [x] Upload EPUB → presigned URL → R2 → create book
 - [x] Extracción automática de cover
 - [x] Search bar local (título/autor)
-- [x] Filtros: All / Reading / Unread
+- [x] Filtros: All / Reading / Unread / Read
 - [x] Sort: Recent, A—Z, Progress, Added
 - [x] Long-press delete con confirmación
 - [x] Pull-to-refresh
 - [x] FAB para upload (abajo derecha)
 - [x] Progress bar con texto de porcentaje (ej: "34%")
+- [x] Badge "leído" en libros terminados
+- [x] Géneros visibles en cada libro (extraídos por IA, catálogo controlado)
 
 ### Reader
 - [x] EpubReader (WebView + epubjs 0.3.93 + JSZip + PanGestureHandler)
@@ -71,11 +73,29 @@
 - [x] trust proxy = 1 (fix ERR_ERL_PERMISSIVE_TRUST_PROXY para Railway)
 - [x] start script: prisma db push (reemplaza migrate deploy)
 - [x] Bookmarks CRUD (modelo Prisma + service + controller + routes)
+- [x] AI helper compartido `src/lib/ai.ts` (callGroq + callGemini, reutilizado por summaries y recommendations)
+- [x] Recommendations service + controller + routes (`/api/recommendations/*`)
+- [x] Auto-marca `status='read'` al llegar progress_percent >= 100
+
+### Recomendaciones IA (Descubrir)
+- [x] Modelo Prisma `BookSuggestion` (userId, title, author, synopsis, reason, genres, sourceBooks, status, expiresAt)
+- [x] Catálogo controlado de géneros (15 géneros normalizados: Ficción, Terror, Suspenso, Romance, Fantasía, Ciencia Ficción, Historia, Filosofía, Biografía, Negocios, Autoayuda, Ciencia, Arte, Humor, Aventura)
+- [x] Extracción automática de géneros por IA (Groq → Gemini fallback, cache en Book.genres)
+- [x] Generación de recomendaciones basada en libros leídos (análisis de todo el historial, no solo el último)
+- [x] 2-3 recomendaciones máximo, TTL 24 horas
+- [x] Backend: POST /api/recommendations/generate, GET /api/recommendations, GET /api/recommendations/wishlist, PATCH /api/recommendations/:id
+- [x] Botón "Descubrir" en header de Library (icono brújula)
+- [x] Pantalla DiscoverScreen (título, autor, géneros, sinopsis, razón de recomendación)
+- [x] Botón "Quiero leer" / "Descartar" en cada sugerencia
+- [x] Pantalla WishlistScreen (lista de libros guardados para leer)
+- [x] Icono "bookmark-multiple" en header para acceso rápido a wishlist
 
 ### Navegación
 - [x] Auth stack (SignIn, SignUp, ForgotPassword)
 - [x] Library (única pantalla principal, sin tabs)
 - [x] HighlightsScreen (accesible desde ícono en header)
+- [x] DiscoverScreen (accesible desde ícono brújula en header)
+- [x] WishlistScreen (accesible desde ícono bookmark en header)
 - [x] Reader (slide from bottom)
 - [x] Profile modal
 

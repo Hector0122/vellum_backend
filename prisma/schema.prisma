@@ -20,6 +20,7 @@ model Profile {
   bookmarks    Bookmark[]
   sessions     ReadingSession[]
   summaries    ChapterSummary[]
+  suggestions  BookSuggestion[]
 
   @@map("profiles")
 }
@@ -33,6 +34,8 @@ model Book {
   coverUrl        String?   @map("cover_url")
   fileUrl         String    @map("file_url")
   fileType        String    @map("file_type")
+  status          String    @default("unread") @map("status")
+  genres          String[]  @default([]) @map("genres")
   progressPercent Int       @default(0) @map("progress_percent")
   progressCfi     String?   @map("progress_cfi")
   lastOpenedAt    DateTime? @map("last_opened_at")
@@ -120,4 +123,23 @@ model ChapterSummary {
 
   @@unique([bookId, chapterIndex])
   @@map("chapter_summaries")
+}
+
+model BookSuggestion {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  title       String
+  author      String?
+  synopsis    String?
+  reason      String?  @map("reason")
+  genres      String[] @default([]) @map("genres")
+  sourceBooks String[] @map("source_books")
+  status      String   @default("suggested") @map("status")
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  profile     Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([userId, expiresAt])
+  @@map("book_suggestions")
 }

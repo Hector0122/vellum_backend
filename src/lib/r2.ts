@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from '../config/env';
 
@@ -57,4 +57,45 @@ export async function uploadBuffer(
 
   await s3.send(command);
   return getPublicUrl(objectKey);
+}
+
+export function extractObjectKey(publicUrl: string): string | null {
+  const prefix = `${env.R2_PUBLIC_URL}/`;
+  if (publicUrl.startsWith(prefix)) {
+    return publicUrl.substring(prefix.length);
+  }
+  return null;
+}
+
+export async function deleteObject(objectKey: string): Promise<void> {
+  const command = new DeleteObjectCommand({
+    Bucket: env.R2_BUCKET_NAME,
+    Key: objectKey,
+  });
+
+  await s3.send(command);
+}
+
+export async function listObjectKeys(): Promise<string[]> {
+  const keys: string[] = [];
+  let continuationToken: string | undefined;
+
+  do {
+    const command = new ListObjectsV2Command({
+      Bucket: env.R2_BUCKET_NAME,
+      ContinuationToken: continuationToken,
+    });
+
+    const response = await s3.send(command);
+    
+    if (response.Contents) {
+      for (const obj of response.Contents) {
+        if (obj.Key) keys.push(obj.Key);
+      }
+    }
+
+    continuationToken = response.NextContinuationToken;
+  } while (continuationToken);
+
+  return keys;
 }

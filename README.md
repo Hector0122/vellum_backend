@@ -82,6 +82,8 @@ Book {
   cover_url
   file_url
   file_type
+  status        // unread | reading | read (auto-read at 100%)
+  genres        // string[] extracted by AI
   progress_percent
   progress_cfi
   last_opened_at
@@ -92,7 +94,9 @@ Book {
 ### Features
 
 - Search local by title/author
-- Filters: All / Reading / Unread
+- Filters: All / Reading / Unread / Read
+- Auto-mark as read at 100% progress
+- Genre tags visible on each book (AI-extracted, normalized catalog)
 - Sort: Recent, A—Z, Progress, Added
 - Long-press to delete
 - Pull-to-refresh
@@ -204,6 +208,35 @@ Generate chapter summaries on demand.
 - Gemini 2.0 Flash as fallback
 - Results cached per chapter in database
 - Displayed as bullet points in reader overlay
+
+---
+
+# 🔮 Discover (AI Recommendations)
+
+Get personalized book recommendations based on your reading history.
+
+- Tap "Discover" button in Library header
+- AI analyzes all your **read** books and their genres
+- 2-3 recommendations per request, TTL 24h
+- Genre extraction with controlled catalog (15 normalized genres)
+- Save suggestions as "Want to read" or dismiss them
+- Wishlist screen to review saved recommendations
+
+```ts
+BookSuggestion {
+  id
+  user_id
+  title
+  author
+  synopsis
+  reason          // why it was recommended
+  genres          // from controlled catalog
+  source_books    // your books that inspired this
+  status          // suggested | want_to_read | dismissed
+  expires_at
+  created_at
+}
+```
 
 ---
 

@@ -15,6 +15,7 @@ router.use(authenticate);
 router.get('/search', booksController.searchBooks);
 router.get('/', booksController.listBooks);
 router.post('/', booksController.createBook);
+router.post('/cleanup-orphans', booksController.cleanupOrphans);
 router.get('/:id', booksController.getBook);
 router.patch('/:id', booksController.updateBook);
 router.delete('/:id', booksController.deleteBook);

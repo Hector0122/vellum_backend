@@ -6,6 +6,7 @@ import uploadRoutes from './routes/upload.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import widgetRoutes from './routes/widget.routes';
 import statsRoutes from './routes/stats.routes';
+import recommendationsRoutes from './routes/recommendations.routes';
 import { authenticate } from './middleware/auth';
 import { apiLimiter, authLimiter } from './middleware/rateLimit';
 import { listAllHighlights } from './controllers/highlights.controller';
@@ -32,6 +33,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/widget', widgetRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/recommendations', recommendationsRoutes);
 app.get('/api/highlights', authenticate, listAllHighlights);
 app.get('/api/notes', authenticate, listAllNotes);
 
