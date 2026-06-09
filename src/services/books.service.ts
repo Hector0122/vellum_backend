@@ -25,6 +25,8 @@ export async function listBooks(
         genres: true,
         progressPercent: true,
         progressCfi: true,
+        currentPage: true,
+        totalPages: true,
         lastOpenedAt: true,
         createdAt: true,
       },
@@ -56,6 +58,7 @@ export async function createBook(
     cover_url?: string;
     file_url: string;
     file_type: 'epub' | 'pdf';
+    total_pages?: number;
   },
 ): Promise<BookRecord> {
   const existing = await prisma.book.findFirst({
@@ -76,6 +79,7 @@ export async function createBook(
       fileUrl: book.file_url,
       fileType: book.file_type,
       progressPercent: 0,
+      totalPages: book.total_pages ?? null,
     },
   });
 
@@ -93,6 +97,8 @@ export async function updateBook(
     status?: 'unread' | 'reading' | 'read';
     progress_percent?: number;
     progress_cfi?: string;
+    current_page?: number;
+    total_pages?: number;
     last_opened_at?: string;
   },
 ): Promise<BookRecord> {
@@ -105,13 +111,30 @@ export async function updateBook(
     if (updates.status !== undefined) data.status = updates.status;
     if (updates.progress_percent !== undefined) {
       data.progressPercent = updates.progress_percent;
-      // Auto-mark as read when reaching 100%
       if (updates.progress_percent >= 100) {
         data.status = 'read';
       }
     }
     if (updates.progress_cfi !== undefined) data.progressCfi = updates.progress_cfi;
+    if (updates.current_page !== undefined) data.currentPage = updates.current_page;
+    if (updates.total_pages !== undefined) data.totalPages = updates.total_pages;
     if (updates.last_opened_at !== undefined) data.lastOpenedAt = new Date(updates.last_opened_at);
+
+    // Auto-calculate progress_percent from pages if total_pages is set
+    if (updates.current_page !== undefined && data.totalPages !== undefined) {
+      data.progressPercent = Math.min(100, Math.round((data.currentPage / data.totalPages) * 100));
+      if (data.progressPercent >= 100) data.status = 'read';
+    } else if (updates.current_page !== undefined) {
+      // totalPages not provided in this update — check current DB value
+      const existing = await prisma.book.findUnique({
+        where: { id: bookId },
+        select: { totalPages: true },
+      });
+      if (existing?.totalPages && existing.totalPages > 0) {
+        data.progressPercent = Math.min(100, Math.round((updates.current_page / existing.totalPages) * 100));
+        if (data.progressPercent >= 100) data.status = 'read';
+      }
+    }
 
     const updated = await prisma.book.update({
       where: { id: bookId, userId },
@@ -182,6 +205,8 @@ export async function searchBooks(
         genres: true,
         progressPercent: true,
         progressCfi: true,
+        currentPage: true,
+        totalPages: true,
         lastOpenedAt: true,
         createdAt: true,
       },
@@ -209,6 +234,8 @@ function mapBook(book: any): BookRecord {
     genres: book.genres || [],
     progress_percent: book.progressPercent,
     progress_cfi: book.progressCfi ?? null,
+    current_page: book.currentPage ?? 0,
+    total_pages: book.totalPages ?? null,
     last_opened_at: book.lastOpenedAt?.toISOString() ?? null,
     created_at: book.createdAt.toISOString(),
   };

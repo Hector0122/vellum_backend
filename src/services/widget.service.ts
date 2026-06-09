@@ -42,6 +42,8 @@ export async function getWidgetData(
       genres: book.genres || [],
       progress_percent: book.progressPercent,
       progress_cfi: book.progressCfi ?? null,
+      current_page: book.currentPage,
+      total_pages: book.totalPages ?? null,
       last_opened_at: book.lastOpenedAt?.toISOString() ?? null,
       created_at: book.createdAt.toISOString(),
     },

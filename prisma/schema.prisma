@@ -38,6 +38,8 @@ model Book {
   genres          String[]  @default([]) @map("genres")
   progressPercent Int       @default(0) @map("progress_percent")
   progressCfi     String?   @map("progress_cfi")
+  currentPage     Int       @default(0) @map("current_page")
+  totalPages      Int?      @map("total_pages")
   lastOpenedAt    DateTime? @map("last_opened_at")
   createdAt       DateTime  @default(now()) @map("created_at")
   profile         Profile           @relation(fields: [userId], references: [id], onDelete: Cascade)
