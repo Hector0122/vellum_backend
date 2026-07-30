@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as booksController from '../controllers/books.controller';
 import { authenticate } from '../middleware/auth';
 import { validateBody, validateQuery } from '../middleware/validate';
-import { createBookSchema, updateBookSchema, searchBooksSchema } from '../lib/validation';
+import { createBookSchema, updateBookSchema, searchBooksSchema, summarizeChapterSchema } from '../lib/validation';
 import highlightRoutes from '../routes/highlights.routes';
 import noteRoutes from '../routes/notes.routes';
 import bookmarkRoutes from '../routes/bookmarks.routes';
@@ -25,6 +25,10 @@ router.delete('/:id', booksController.deleteBook);
 router.use('/:bookId/highlights', highlightRoutes);
 router.use('/:bookId/notes', noteRoutes);
 router.use('/:bookId/bookmarks', bookmarkRoutes);
-router.post('/:bookId/:chapterIndex/summary', summariesController.getSummary);
+router.post(
+  '/:bookId/:chapterIndex/summary',
+  validateBody(summarizeChapterSchema),
+  summariesController.getSummary,
+);
 
 export default router;

@@ -1,15 +1,17 @@
 import { prisma } from '../lib/db';
 import { callGroq, callGemini } from '../lib/ai';
+import { getObject, extractObjectKey } from '../lib/r2';
+import { extractChapterText } from '../lib/epub';
 
 export async function summarizeChapter(
   userId: string,
   bookId: string,
   chapterIndex: number,
-  chapterText: string,
+  href: string,
 ) {
   const book = await prisma.book.findFirst({
     where: { id: bookId, userId },
-    select: { id: true },
+    select: { fileUrl: true },
   });
   if (!book) throw new Error('Book not found');
 
@@ -23,7 +25,13 @@ export async function summarizeChapter(
     return { summary: existing.content, cached: true };
   }
 
-  const prompt = `Summarize this book chapter in 3-5 concise bullet points in English. Focus on key ideas, events, and takeaways:\n\n${chapterText.slice(0, 6000)}`;
+  const objectKey = extractObjectKey(book.fileUrl);
+  if (!objectKey) throw new Error('Book file not found in storage');
+
+  const fileBuffer = await getObject(objectKey);
+  const chapterText = await extractChapterText(fileBuffer, href);
+
+  const prompt = `Summarize this book chapter in 3-5 concise bullet points, written in the same language as the source text below. Focus on key ideas, events, and takeaways:\n\n${chapterText.slice(0, 6000)}`;
 
   let groqError: string | null = null;
 

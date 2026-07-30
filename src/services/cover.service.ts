@@ -1,5 +1,6 @@
 import epubParser from 'epub-parser';
 import { getObject, uploadBuffer } from '../lib/r2';
+import { withEpubParserLock, openEpub } from '../lib/epub';
 
 export async function extractCover(
   objectKey: string,
@@ -7,53 +8,34 @@ export async function extractCover(
 ): Promise<string | null> {
   const buffer = await getObject(objectKey);
 
-  return new Promise((resolve, reject) => {
-    epubParser.open(buffer, async (err: Error | null, epubData: any) => {
-      if (err) {
-        reject(err);
-        return;
+  return withEpubParserLock(async () => {
+    const epubData = await openEpub(buffer);
+    const easy = epubData.easy;
+    const opsRoot = epubData.paths.opsRoot || '';
+
+    let coverHref: string | null = null;
+    let mimeType = 'image/jpeg';
+
+    if (easy.epub3CoverId) {
+      const item = easy.itemHashById[easy.epub3CoverId];
+      if (item) {
+        coverHref = opsRoot + item.$.href;
+        mimeType = item.$['media-type'] || mimeType;
       }
+    }
 
-      try {
-        const easy = epubData.easy;
-        const paths = epubData.paths;
-        const opsRoot = paths.opsRoot || '';
+    if (!coverHref && easy.epub2CoverUrl) {
+      coverHref = easy.epub2CoverUrl;
+    }
 
-        let coverHref: string | null = null;
-        let mimeType = 'image/jpeg';
+    if (!coverHref) return null;
 
-        if (easy.epub3CoverId) {
-          const item = easy.itemHashById[easy.epub3CoverId];
-          if (item) {
-            coverHref = opsRoot + item.$.href;
-            mimeType = item.$['media-type'] || mimeType;
-          }
-        }
+    const raw = epubParser.extractBinary(coverHref);
+    if (!raw) return null;
 
-        if (!coverHref && easy.epub2CoverUrl) {
-          coverHref = easy.epub2CoverUrl;
-        }
-
-        if (!coverHref) {
-          resolve(null);
-          return;
-        }
-
-        const raw = epubParser.extractBinary(coverHref);
-        if (!raw) {
-          resolve(null);
-          return;
-        }
-
-        const imgBuffer = Buffer.from(raw, 'binary');
-        const ext = mimeType.includes('png') ? 'png' : 'jpeg';
-        const coverKey = `covers/${userId}/${Date.now()}_cover.${ext}`;
-        const publicUrl = await uploadBuffer(coverKey, imgBuffer, mimeType);
-
-        resolve(publicUrl);
-      } catch (err) {
-        reject(err);
-      }
-    });
+    const imgBuffer = Buffer.from(raw, 'binary');
+    const ext = mimeType.includes('png') ? 'png' : 'jpeg';
+    const coverKey = `covers/${userId}/${Date.now()}_cover.${ext}`;
+    return uploadBuffer(coverKey, imgBuffer, mimeType);
   });
 }

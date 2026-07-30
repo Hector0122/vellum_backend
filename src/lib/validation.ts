@@ -78,6 +78,11 @@ export const updateNoteSchema = z.object({
   highlight_id: z.string().uuid().optional().or(z.literal(null)),
 });
 
+// Summaries Schemas
+export const summarizeChapterSchema = z.object({
+  href: z.string().min(1, 'href is required'),
+});
+
 // Bookmarks Schemas
 export const createBookmarkSchema = z.object({
   cfi: z.string().min(1, 'cfi is required'),
