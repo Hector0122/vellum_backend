@@ -17,10 +17,6 @@ export async function listBookmarks(req: AuthenticatedRequest, res: Response) {
 export async function createBookmark(req: AuthenticatedRequest, res: Response) {
   try {
     const { cfi, label } = req.body;
-    if (!cfi) {
-      res.status(400).json({ error: 'cfi is required' });
-      return;
-    }
     const bookmark = await bookmarksService.createBookmark(
       req.userId!,
       req.params.bookId,

@@ -76,13 +76,14 @@ export async function deleteObject(objectKey: string): Promise<void> {
   await s3.send(command);
 }
 
-export async function listObjectKeys(): Promise<string[]> {
+export async function listObjectKeys(prefix?: string): Promise<string[]> {
   const keys: string[] = [];
   let continuationToken: string | undefined;
 
   do {
     const command = new ListObjectsV2Command({
       Bucket: env.R2_BUCKET_NAME,
+      Prefix: prefix,
       ContinuationToken: continuationToken,
     });
 

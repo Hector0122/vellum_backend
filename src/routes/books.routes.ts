@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import * as booksController from '../controllers/books.controller';
 import { authenticate } from '../middleware/auth';
+import { validateBody, validateQuery } from '../middleware/validate';
+import { createBookSchema, updateBookSchema, searchBooksSchema } from '../lib/validation';
 import highlightRoutes from '../routes/highlights.routes';
 import noteRoutes from '../routes/notes.routes';
 import bookmarkRoutes from '../routes/bookmarks.routes';
@@ -12,12 +14,12 @@ router.get('/:id/file', booksController.getBookFile); // auth via query param, n
 
 router.use(authenticate);
 
-router.get('/search', booksController.searchBooks);
+router.get('/search', validateQuery(searchBooksSchema), booksController.searchBooks);
 router.get('/', booksController.listBooks);
-router.post('/', booksController.createBook);
+router.post('/', validateBody(createBookSchema), booksController.createBook);
 router.post('/cleanup-orphans', booksController.cleanupOrphans);
 router.get('/:id', booksController.getBook);
-router.patch('/:id', booksController.updateBook);
+router.patch('/:id', validateBody(updateBookSchema), booksController.updateBook);
 router.delete('/:id', booksController.deleteBook);
 
 router.use('/:bookId/highlights', highlightRoutes);

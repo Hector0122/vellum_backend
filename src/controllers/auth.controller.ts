@@ -5,16 +5,6 @@ import type { AuthenticatedRequest } from '../types';
 export async function signUp(req: Request, res: Response) {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    res.status(400).json({ error: 'Email and password are required' });
-    return;
-  }
-
-  if (password.length < 6) {
-    res.status(400).json({ error: 'Password must be at least 6 characters' });
-    return;
-  }
-
   try {
     const result = await authService.signUp(email, password);
     res.status(201).json(result);
@@ -26,11 +16,6 @@ export async function signUp(req: Request, res: Response) {
 
 export async function signIn(req: Request, res: Response) {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    res.status(400).json({ error: 'Email and password are required' });
-    return;
-  }
 
   try {
     const result = await authService.signIn(email, password);
@@ -58,24 +43,33 @@ export async function signOut(req: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function resetPassword(req: Request, res: Response) {
-  const { email, newPassword } = req.body;
-
-  if (!email || !newPassword) {
-    res.status(400).json({ error: 'Email and newPassword are required' });
-    return;
-  }
-
-  if (newPassword.length < 8) {
-    res.status(400).json({ error: 'Password must be at least 8 characters' });
-    return;
-  }
+export async function forgotPassword(req: Request, res: Response) {
+  const { email } = req.body;
 
   try {
-    await authService.resetPassword(email, newPassword);
+    await authService.requestPasswordReset(email);
+  } catch (err: any) {
+    // Swallow errors (e.g. Mailgun failures) — don't leak details, don't reveal
+    // whether the email exists. Log server-side for debugging.
+    console.error('[forgotPassword]', err.message);
+  }
+
+  res.json({
+    success: true,
+    message: 'If an account exists for this email, a reset code has been sent.',
+  });
+}
+
+export async function resetPassword(req: Request, res: Response) {
+  const { email, code, newPassword } = req.body;
+
+  try {
+    await authService.resetPassword(email, code, newPassword);
     res.json({ success: true });
   } catch (err: any) {
-    const status = err.message.includes('No account') ? 404 : 500;
+    let status = 500;
+    if (err.message.includes('No account')) status = 404;
+    else if (err.message.includes('Invalid or expired')) status = 401;
     res.status(status).json({ error: err.message });
   }
 }

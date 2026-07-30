@@ -241,9 +241,10 @@ function mapBook(book: any): BookRecord {
   };
 }
 
-export async function cleanupOrphanedObjects(): Promise<{ deleted: number }> {
-  // Get all referenced URLs from DB
+export async function cleanupOrphanedObjects(userId: string): Promise<{ deleted: number }> {
+  // Get referenced URLs from this user's own books only
   const books = await prisma.book.findMany({
+    where: { userId },
     select: { fileUrl: true, coverUrl: true },
   });
 
@@ -256,8 +257,13 @@ export async function cleanupOrphanedObjects(): Promise<{ deleted: number }> {
     if (coverKey) referencedKeys.add(coverKey);
   }
 
-  // Get all R2 objects
-  const allKeys = await listObjectKeys();
+  // Only scan R2 objects under this user's own prefixes (uploads are keyed
+  // books/{userId}/... and covers/{userId}/...) — never touch other users' files.
+  const [bookKeys, coverKeys] = await Promise.all([
+    listObjectKeys(`books/${userId}/`),
+    listObjectKeys(`covers/${userId}/`),
+  ]);
+  const allKeys = [...bookKeys, ...coverKeys];
 
   // Find orphans
   const orphans = allKeys.filter((key) => !referencedKeys.has(key));

@@ -2,6 +2,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/db';
 import { env } from '../config/env';
+import { generateResetCode, verifyResetCode } from '../lib/resetCode';
+import { sendPasswordResetEmail } from '../lib/mailer';
 import type { UserProfile, AuthResponse } from '../types';
 
 const SALT_ROUNDS = 10;
@@ -65,10 +67,29 @@ export async function signOut(_accessToken: string): Promise<void> {
   // stateless JWT — nothing to invalidate
 }
 
-export async function resetPassword(email: string, newPassword: string): Promise<void> {
+export async function requestPasswordReset(email: string): Promise<void> {
+  const profile = await prisma.profile.findUnique({ where: { email } });
+  if (!profile) {
+    // Don't reveal whether the email exists — caller always shows a generic message
+    return;
+  }
+
+  const code = generateResetCode(email);
+  await sendPasswordResetEmail(email, code);
+}
+
+export async function resetPassword(
+  email: string,
+  code: string,
+  newPassword: string,
+): Promise<void> {
   const profile = await prisma.profile.findUnique({ where: { email } });
   if (!profile) {
     throw new Error('No account found with this email');
+  }
+
+  if (!verifyResetCode(email, code)) {
+    throw new Error('Invalid or expired reset code');
   }
 
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);

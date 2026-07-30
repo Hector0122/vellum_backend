@@ -54,6 +54,34 @@ Fast, reliable, and mobile-first.
 
 ---
 
+# ⚙️ Environment Variables
+
+```
+DATABASE_URL          # Postgres connection string (Supabase)
+JWT_SECRET             # Signs auth tokens and password-reset codes
+
+R2_ACCOUNT_ID
+R2_ACCESS_KEY_ID
+R2_SECRET_ACCESS_KEY
+R2_BUCKET_NAME
+R2_PUBLIC_URL
+
+GROQ_API_KEY            # AI summaries/recommendations (primary)
+GEMINI_API_KEY           # AI summaries/recommendations (fallback)
+
+MAILGUN_API_KEY          # Password reset emails
+MAILGUN_DOMAIN
+MAILGUN_FROM             # optional, defaults to "Vellum <no-reply@$MAILGUN_DOMAIN>"
+
+ALLOWED_ORIGINS           # optional, comma-separated CORS allowlist (e.g.
+                           # "https://vellum.app,https://staging.vellum.app").
+                           # Left unset, CORS reflects any origin (current/legacy
+                           # behavior) — set this on Railway once the production
+                           # origin(s) are known to lock it down.
+```
+
+---
+
 # 👤 Authentication
 
 Users can:

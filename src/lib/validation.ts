@@ -12,8 +12,13 @@ export const signInSchema = z.object({
   password: z.string(),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
 export const resetPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
+  code: z.string().length(6, 'Code must be 6 digits'),
   newPassword: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
@@ -37,8 +42,11 @@ export const updateBookSchema = z.object({
   author: z.string().optional().or(z.literal(null)),
   description: z.string().optional().or(z.literal(null)),
   cover_url: z.string().url('Invalid cover URL').optional().or(z.literal(null)),
+  status: z.enum(['unread', 'reading', 'read']).optional(),
   progress_percent: z.number().min(0).max(100).optional(),
   progress_cfi: z.string().optional().or(z.literal(null)),
+  current_page: z.number().int().min(0).optional(),
+  total_pages: z.number().int().min(1).optional().or(z.literal(null)),
   last_opened_at: z.string().datetime().optional(),
 });
 
@@ -70,6 +78,12 @@ export const updateNoteSchema = z.object({
   highlight_id: z.string().uuid().optional().or(z.literal(null)),
 });
 
+// Bookmarks Schemas
+export const createBookmarkSchema = z.object({
+  cfi: z.string().min(1, 'cfi is required'),
+  label: z.string().optional().or(z.literal(null)),
+});
+
 // Pagination Helper
 export const paginationSchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(20).optional(),
@@ -78,6 +92,7 @@ export const paginationSchema = z.object({
 
 export type SignUpInput = z.infer<typeof signUpSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type EditProfileInput = z.infer<typeof editProfileSchema>;
 export type CreateBookInput = z.infer<typeof createBookSchema>;
@@ -87,3 +102,4 @@ export type CreateHighlightInput = z.infer<typeof createHighlightSchema>;
 export type UpdateHighlightInput = z.infer<typeof updateHighlightSchema>;
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;
 export type UpdateNoteInput = z.infer<typeof updateNoteSchema>;
+export type CreateBookmarkInput = z.infer<typeof createBookmarkSchema>;

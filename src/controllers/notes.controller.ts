@@ -20,11 +20,6 @@ export async function listNotes(req: AuthenticatedRequest, res: Response) {
 export async function createNote(req: AuthenticatedRequest, res: Response) {
   const { content, highlight_id } = req.body;
 
-  if (!content) {
-    res.status(400).json({ error: 'content is required' });
-    return;
-  }
-
   try {
     const note = await notesService.createNote(req.userId!, {
       book_id: req.params.bookId,

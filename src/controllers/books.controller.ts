@@ -33,16 +33,6 @@ export async function getBook(req: AuthenticatedRequest, res: Response) {
 export async function createBook(req: AuthenticatedRequest, res: Response) {
   const { title, file_url, file_type, author, description, cover_url } = req.body;
 
-  if (!title || !file_url || !file_type) {
-    res.status(400).json({ error: 'title, file_url, and file_type are required' });
-    return;
-  }
-
-  if (!['epub', 'pdf'].includes(file_type)) {
-    res.status(400).json({ error: 'file_type must be "epub" or "pdf"' });
-    return;
-  }
-
   try {
     const book = await booksService.createBook(req.userId!, {
       title,
@@ -117,28 +107,22 @@ export async function deleteBook(req: AuthenticatedRequest, res: Response) {
 
 export async function searchBooks(req: AuthenticatedRequest, res: Response) {
   try {
-    const { q, limit = 20, offset = 0 } = req.query;
+    const { q, limit, offset } = (req as any).validatedQuery as {
+      q: string;
+      limit?: number;
+      offset?: number;
+    };
 
-    if (!q || typeof q !== 'string') {
-      res.status(400).json({ error: 'Search query "q" is required' });
-      return;
-    }
-
-    const result = await booksService.searchBooks(
-      req.userId!,
-      q,
-      parseInt(limit as string, 10) || 20,
-      parseInt(offset as string, 10) || 0,
-    );
+    const result = await booksService.searchBooks(req.userId!, q, limit ?? 20, offset ?? 0);
     res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 }
 
-export async function cleanupOrphans(_req: AuthenticatedRequest, res: Response) {
+export async function cleanupOrphans(req: AuthenticatedRequest, res: Response) {
   try {
-    const result = await booksService.cleanupOrphanedObjects();
+    const result = await booksService.cleanupOrphanedObjects(req.userId!);
     res.json({ success: true, ...result });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

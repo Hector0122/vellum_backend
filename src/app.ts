@@ -16,7 +16,15 @@ import { errorHandler } from './middleware/errorHandler';
 const app: express.Application = express();
 
 app.set('trust proxy', 1);
-app.use(cors());
+
+// ALLOWED_ORIGINS is a comma-separated allowlist (e.g. "https://vellum.app,https://staging.vellum.app").
+// Left unset, cors() falls back to its permissive default (reflect any origin) — the same
+// behavior as before this was added, so a missing/misconfigured env var doesn't lock out traffic.
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(cors(allowedOrigins && allowedOrigins.length > 0 ? { origin: allowedOrigins } : undefined));
 app.use(express.json());
 
 app.get('/health', (_req, res) => {

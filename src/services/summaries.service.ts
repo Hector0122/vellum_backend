@@ -7,6 +7,12 @@ export async function summarizeChapter(
   chapterIndex: number,
   chapterText: string,
 ) {
+  const book = await prisma.book.findFirst({
+    where: { id: bookId, userId },
+    select: { id: true },
+  });
+  if (!book) throw new Error('Book not found');
+
   const existing = await prisma.chapterSummary.findUnique({
     where: {
       bookId_chapterIndex: { bookId, chapterIndex },

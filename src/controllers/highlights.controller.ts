@@ -20,11 +20,6 @@ export async function listHighlights(req: AuthenticatedRequest, res: Response) {
 export async function createHighlight(req: AuthenticatedRequest, res: Response) {
   const { text, location, color } = req.body;
 
-  if (!text || !location) {
-    res.status(400).json({ error: 'text and location are required' });
-    return;
-  }
-
   try {
     const highlight = await highlightsService.createHighlight(req.userId!, {
       book_id: req.params.bookId,

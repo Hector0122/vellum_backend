@@ -7,7 +7,10 @@ export const apiLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.method === 'GET' || req.path === '/api/analytics/track', // Don't limit GET or analytics
+  // Don't limit GET or analytics. req.path is relative to this middleware's
+  // mount point ('/api/'), so the analytics route here is '/analytics/track',
+  // not the full '/api/analytics/track'.
+  skip: (req) => req.method === 'GET' || req.path === '/analytics/track',
 });
 
 // Auth rate limiter (10 POST attempts per 15 minutes)
