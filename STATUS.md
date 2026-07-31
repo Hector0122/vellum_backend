@@ -54,7 +54,7 @@
 - [x] Note store en Zustand
 
 ### Bookmarks
-- [x] Prisma model Bookmark (id, user_id, book_id, cfi, label, created_at)
+- [x] Prisma model Bookmark (id, user_id, book_id, locator, label, created_at)
 - [x] CRUD service + controller → /api/books/:bookId/bookmarks
 - [x] bookmarkStore (Zustand) + goToCfi en EpubReader
 - [x] Add (botón + en overlay) y navegar (tap) / eliminar (long-press)

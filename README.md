@@ -113,7 +113,7 @@ Book {
   status        // unread | reading | read (auto-read at 100%)
   genres        // string[] extracted by AI
   progress_percent
-  progress_cfi
+  progress_locator
   last_opened_at
   created_at
 }
@@ -166,7 +166,7 @@ Highlight {
   user_id
   book_id
   text
-  location
+  locator
   color
   created_at
 }
@@ -348,7 +348,7 @@ file_type
 status       // unread | reading | read
 genres       // string[] catálogo controlado
 progress_percent
-progress_cfi
+progress_locator
 last_opened_at
 created_at
 ```
@@ -360,7 +360,7 @@ id
 user_id
 book_id
 text
-location
+locator
 color
 created_at
 ```
