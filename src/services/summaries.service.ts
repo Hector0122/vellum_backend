@@ -31,12 +31,19 @@ export async function summarizeChapter(
   const fileBuffer = await getObject(objectKey);
   const chapterText = await extractChapterText(fileBuffer, href);
 
+  // Cover/title/blank pages extract to little or no prose — don't waste an AI
+  // call (or worse, silently cache an empty/useless summary) on those.
+  if (chapterText.trim().length < 200) {
+    throw new Error('This page has too little text to summarize');
+  }
+
   const prompt = `Summarize this book chapter in 3-5 concise bullet points, written in the same language as the source text below. Focus on key ideas, events, and takeaways:\n\n${chapterText.slice(0, 6000)}`;
 
   let groqError: string | null = null;
 
   try {
     const content = await callGroq(prompt);
+    if (!content.trim()) throw new Error('Groq returned an empty response');
 
     await prisma.chapterSummary.create({
       data: {
@@ -55,6 +62,7 @@ export async function summarizeChapter(
 
   try {
     const content = await callGemini(prompt);
+    if (!content.trim()) throw new Error('Gemini returned an empty response');
 
     await prisma.chapterSummary.create({
       data: {

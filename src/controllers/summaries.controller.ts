@@ -23,7 +23,12 @@ export async function getSummary(req: AuthenticatedRequest, res: Response) {
   } catch (err: any) {
     let status = 500;
     if (err.message === 'Book not found') status = 404;
-    else if (err.message.includes('not found in EPUB manifest') || err.message.includes('Failed to extract chapter content') || err.message === 'Book file not found in storage') {
+    else if (
+      err.message.includes('not found in EPUB manifest') ||
+      err.message.includes('Failed to extract chapter content') ||
+      err.message === 'Book file not found in storage' ||
+      err.message === 'This page has too little text to summarize'
+    ) {
       status = 422;
     } else if (err.message.includes('AI service temporarily unavailable')) {
       status = 503;
