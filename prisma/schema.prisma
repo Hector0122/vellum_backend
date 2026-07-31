@@ -49,6 +49,7 @@ model Book {
   sessions        ReadingSession[]
   summaries       ChapterSummary[]
 
+  @@unique([userId, title])
   @@index([userId, lastOpenedAt(sort: Desc)])
   @@map("books")
 }

@@ -69,21 +69,29 @@ export async function createBook(
     throw new Error('DUPLICATE_BOOK');
   }
 
-  const created = await prisma.book.create({
-    data: {
-      userId,
-      title: book.title,
-      author: book.author || null,
-      description: book.description || null,
-      coverUrl: book.cover_url || null,
-      fileUrl: book.file_url,
-      fileType: book.file_type,
-      progressPercent: 0,
-      totalPages: book.total_pages ?? null,
-    },
-  });
+  try {
+    const created = await prisma.book.create({
+      data: {
+        userId,
+        title: book.title,
+        author: book.author || null,
+        description: book.description || null,
+        coverUrl: book.cover_url || null,
+        fileUrl: book.file_url,
+        fileType: book.file_type,
+        progressPercent: 0,
+        totalPages: book.total_pages ?? null,
+      },
+    });
 
-  return mapBook(created);
+    return mapBook(created);
+  } catch (err: any) {
+    // Race condition: another concurrent request created a book with this
+    // title between the check above and this insert. The DB-level unique
+    // constraint (userId, title) catches what the pre-check can't.
+    if (err?.code === 'P2002') throw new Error('DUPLICATE_BOOK');
+    throw err;
+  }
 }
 
 export async function updateBook(
@@ -156,19 +164,26 @@ export async function deleteBook(userId: string, bookId: string): Promise<void> 
 
   if (!book) throw new Error('Book not found');
 
-  // Delete files from R2
+  // Delete the DB record first (cascades to highlights/notes/bookmarks/sessions/
+  // summaries). If R2 cleanup below fails or the process crashes, the result is
+  // an orphaned *file* (recoverable via cleanup-orphans), not an orphaned DB row
+  // pointing at deleted files — the safer failure mode for the user.
+  await prisma.book.deleteMany({
+    where: { id: bookId, userId },
+  });
+
   const keys: string[] = [];
   const fileKey = extractObjectKey(book.fileUrl);
   if (fileKey) keys.push(fileKey);
-  
+
   const coverKey = book.coverUrl ? extractObjectKey(book.coverUrl) : null;
   if (coverKey) keys.push(coverKey);
 
-  await Promise.allSettled(keys.map((key) => deleteObject(key)));
-
-  // Delete DB record
-  await prisma.book.deleteMany({
-    where: { id: bookId, userId },
+  const results = await Promise.allSettled(keys.map((key) => deleteObject(key)));
+  results.forEach((result, i) => {
+    if (result.status === 'rejected') {
+      console.error(`[deleteBook] Failed to delete R2 object ${keys[i]}:`, result.reason);
+    }
   });
 }
 

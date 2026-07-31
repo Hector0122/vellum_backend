@@ -23,12 +23,21 @@ function mapBookmark(b: any): BookmarkRecord {
 export async function listBookmarks(
   userId: string,
   bookId: string,
-): Promise<BookmarkRecord[]> {
-  const rows = await prisma.bookmark.findMany({
-    where: { userId, bookId },
-    orderBy: { createdAt: 'asc' },
-  });
-  return rows.map(mapBookmark);
+  limit: number = 20,
+  offset: number = 0,
+): Promise<{ bookmarks: BookmarkRecord[]; total: number }> {
+  const where = { userId, bookId };
+  const [rows, total] = await Promise.all([
+    prisma.bookmark.findMany({
+      where,
+      orderBy: { createdAt: 'asc' },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.bookmark.count({ where }),
+  ]);
+
+  return { bookmarks: rows.map(mapBookmark), total };
 }
 
 export async function createBookmark(
@@ -47,7 +56,9 @@ export async function deleteBookmark(
   userId: string,
   bookmarkId: string,
 ): Promise<void> {
-  await prisma.bookmark.deleteMany({
+  const { count } = await prisma.bookmark.deleteMany({
     where: { id: bookmarkId, userId },
   });
+
+  if (count === 0) throw new Error('Bookmark not found');
 }
