@@ -4,7 +4,7 @@ export interface BookmarkRecord {
   id: string;
   user_id: string;
   book_id: string;
-  cfi: string;
+  locator: string;
   label: string | null;
   created_at: string;
 }
@@ -14,7 +14,7 @@ function mapBookmark(b: any): BookmarkRecord {
     id: b.id,
     user_id: b.userId,
     book_id: b.bookId,
-    cfi: b.cfi,
+    locator: b.locator,
     label: b.label,
     created_at: b.createdAt.toISOString(),
   };
@@ -43,11 +43,11 @@ export async function listBookmarks(
 export async function createBookmark(
   userId: string,
   bookId: string,
-  cfi: string,
+  locator: string,
   label?: string,
 ): Promise<BookmarkRecord> {
   const created = await prisma.bookmark.create({
-    data: { userId, bookId, cfi, label },
+    data: { userId, bookId, locator, label },
   });
   return mapBookmark(created);
 }

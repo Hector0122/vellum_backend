@@ -231,11 +231,13 @@ Track reading habits and streaks.
 
 Generate chapter summaries on demand.
 
-- Extract chapter text automatically
-- Groq (Llama 3.1) as primary provider
-- Gemini 2.0 Flash as fallback
-- Results cached per chapter in database
-- Displayed as bullet points in reader overlay
+- `POST /api/books/:bookId/:chapterIndex/summary` accepts `{ href }` — the chapter's path within the EPUB (from the client's TOC), not raw text
+- Server downloads the book's EPUB from R2 and extracts that chapter's text via `epub-parser` (`src/lib/epub.ts`), stripping HTML
+- Chapters with under ~200 characters of extracted text (cover/title pages) return a 422 instead of an empty/useless summary
+- Groq as primary provider, Gemini 2.0 Flash as fallback
+- Summary is generated in the same language as the source chapter (prompt no longer hardcodes English)
+- Results cached per chapter in database (`ChapterSummary`, unique on `bookId_chapterIndex`)
+- Ownership-checked: 404 if the book doesn't belong to the requesting user
 
 ---
 

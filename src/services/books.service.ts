@@ -24,7 +24,7 @@ export async function listBooks(
         status: true,
         genres: true,
         progressPercent: true,
-        progressCfi: true,
+        progressLocator: true,
         currentPage: true,
         totalPages: true,
         lastOpenedAt: true,
@@ -104,7 +104,7 @@ export async function updateBook(
     cover_url?: string;
     status?: 'unread' | 'reading' | 'read';
     progress_percent?: number;
-    progress_cfi?: string;
+    progress_locator?: string;
     current_page?: number;
     total_pages?: number;
     last_opened_at?: string;
@@ -123,7 +123,7 @@ export async function updateBook(
         data.status = 'read';
       }
     }
-    if (updates.progress_cfi !== undefined) data.progressCfi = updates.progress_cfi;
+    if (updates.progress_locator !== undefined) data.progressLocator = updates.progress_locator;
     if (updates.current_page !== undefined) data.currentPage = updates.current_page;
     if (updates.total_pages !== undefined) data.totalPages = updates.total_pages;
     if (updates.last_opened_at !== undefined) data.lastOpenedAt = new Date(updates.last_opened_at);
@@ -219,7 +219,7 @@ export async function searchBooks(
         status: true,
         genres: true,
         progressPercent: true,
-        progressCfi: true,
+        progressLocator: true,
         currentPage: true,
         totalPages: true,
         lastOpenedAt: true,
@@ -248,7 +248,7 @@ function mapBook(book: any): BookRecord {
     status: book.status || 'unread',
     genres: book.genres || [],
     progress_percent: book.progressPercent,
-    progress_cfi: book.progressCfi ?? null,
+    progress_locator: book.progressLocator ?? null,
     current_page: book.currentPage ?? 0,
     total_pages: book.totalPages ?? null,
     last_opened_at: book.lastOpenedAt?.toISOString() ?? null,

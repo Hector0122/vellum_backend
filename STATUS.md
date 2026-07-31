@@ -168,13 +168,15 @@
 - [x] Mostrar tiempo estimado para terminar el libro completo (proyectado desde avg palabras por capítulo + total chapters)
 - [x] Badge compacto: `~5m in chap · ~2h 15m total`
 
-##### AI Summaries 🤖 ✅
+##### AI Summaries 🤖 ✅ (reconstruida tras la migración a react-native-readium)
 - [x] Modelo Prisma `ChapterSummary` (bookId + chapterIndex único, cache en DB)
-- [x] Backend proxy: Groq (llama-3.1-8b-instant) como primario, Gemini 2.0 Flash como fallback
+- [x] Backend proxy: Groq (`openai/gpt-oss-20b`) como primario, Gemini 2.0 Flash como fallback
 - [x] Fallback automático: si Groq falla → Gemini automáticamente (si ambos fallan → error amigable)
-- [x] Botón "AI Summary" en overlay del reader (verde `#10B981`, ícono `auto-fix`)
-- [x] Extracción de texto del capítulo vía `getChapterText()` en WebView
-- [x] Panel inferior con resumen en 3-5 bullet points, scrollable (ScrollView con maxHeight 350)
+- [x] Resumen generado en el mismo idioma del capítulo (ya no fuerza inglés)
+- [x] Botón "AI Summary" en overlay del reader (verde `colors.success`, ícono `auto-fix`), en su propia fila para no competir por espacio con Save/Chapters/Bookmarks/Highlights
+- [x] Extracción de texto del capítulo server-side vía `epub-parser` (`src/lib/epub.ts`), reutilizando la descarga de R2 — reemplaza el viejo `getChapterText()` de WebView, que ya no existe con el reader nativo
+- [x] Páginas con muy poco texto (portada/título) devuelven error claro en vez de un resumen vacío cacheado para siempre
+- [x] Panel inferior con resumen en 3-5 bullet points, scrollable (ScrollView con maxHeight fijo — ojo: `flex:1` en un ScrollView dentro de un panel con solo `maxHeight` colapsa a 0 en RN/Yoga, ya lo pisamos una vez)
 - [x] Caché automático por capítulo en DB
 
 

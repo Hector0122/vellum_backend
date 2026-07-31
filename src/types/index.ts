@@ -24,7 +24,7 @@ export interface BookRecord {
   status: 'unread' | 'reading' | 'read';
   genres: string[];
   progress_percent: number;
-  progress_cfi: string | null;
+  progress_locator: string | null;
   current_page: number;
   total_pages: number | null;
   last_opened_at: string | null;
@@ -50,7 +50,7 @@ export interface HighlightRecord {
   user_id: string;
   book_id: string;
   text: string;
-  location: string;
+  locator: string;
   color: string;
   created_at: string;
 }
@@ -59,7 +59,7 @@ export interface BookmarkRecord {
   id: string;
   user_id: string;
   book_id: string;
-  cfi: string;
+  locator: string;
   label: string | null;
   created_at: string;
 }

@@ -44,7 +44,7 @@ export const updateBookSchema = z.object({
   cover_url: z.string().url('Invalid cover URL').optional().or(z.literal(null)),
   status: z.enum(['unread', 'reading', 'read']).optional(),
   progress_percent: z.number().min(0).max(100).optional(),
-  progress_cfi: z.string().optional().or(z.literal(null)),
+  progress_locator: z.string().optional().or(z.literal(null)),
   current_page: z.number().int().min(0).optional(),
   total_pages: z.number().int().min(1).optional().or(z.literal(null)),
   last_opened_at: z.string().datetime().optional(),
@@ -59,7 +59,7 @@ export const searchBooksSchema = z.object({
 // Highlights Schemas
 export const createHighlightSchema = z.object({
   text: z.string().min(1, 'Text is required'),
-  location: z.string().min(1, 'Location is required'),
+  locator: z.string().min(1, 'Locator is required'),
   color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Invalid color format').default('#FFD700'),
 });
 
@@ -85,7 +85,7 @@ export const summarizeChapterSchema = z.object({
 
 // Bookmarks Schemas
 export const createBookmarkSchema = z.object({
-  cfi: z.string().min(1, 'cfi is required'),
+  locator: z.string().min(1, 'locator is required'),
   label: z.string().optional().or(z.literal(null)),
 });
 

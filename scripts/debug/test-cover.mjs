@@ -1,3 +1,4 @@
+// Manual debug script for epub-parser cover extraction against a local fixture — not wired into any npm script or CI. Run with `node scripts/debug/test-cover.mjs`.
 import epubParser from 'epub-parser';
 import { readFile } from 'fs/promises';
 

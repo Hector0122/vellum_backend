@@ -29,7 +29,7 @@ export async function createHighlight(
   highlight: {
     book_id: string;
     text: string;
-    location: string;
+    locator: string;
     color?: string;
   },
 ): Promise<HighlightRecord> {
@@ -38,7 +38,7 @@ export async function createHighlight(
       userId,
       bookId: highlight.book_id,
       text: highlight.text,
-      location: highlight.location,
+      locator: highlight.locator,
       color: highlight.color || '#FFD700',
     },
   });
@@ -101,7 +101,7 @@ export async function listAllHighlights(
       book_id: h.bookId,
       book_title: h.book.title,
       text: h.text,
-      location: h.location,
+      locator: h.locator,
       color: h.color,
       created_at: h.createdAt.toISOString(),
     })),
@@ -115,7 +115,7 @@ function mapHighlight(h: any): HighlightRecord {
     user_id: h.userId,
     book_id: h.bookId,
     text: h.text,
-    location: h.location,
+    locator: h.locator,
     color: h.color,
     created_at: h.createdAt.toISOString(),
   };

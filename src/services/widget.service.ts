@@ -41,7 +41,7 @@ export async function getWidgetData(
       status: (book.status || 'unread') as 'unread' | 'reading' | 'read',
       genres: book.genres || [],
       progress_percent: book.progressPercent,
-      progress_cfi: book.progressCfi ?? null,
+      progress_locator: book.progressLocator ?? null,
       current_page: book.currentPage,
       total_pages: book.totalPages ?? null,
       last_opened_at: book.lastOpenedAt?.toISOString() ?? null,
@@ -52,7 +52,7 @@ export async function getWidgetData(
       user_id: h.userId,
       book_id: h.bookId,
       text: h.text,
-      location: h.location,
+      locator: h.locator,
       color: h.color,
       created_at: h.createdAt.toISOString(),
     })),
@@ -60,7 +60,7 @@ export async function getWidgetData(
       id: b.id,
       user_id: b.userId,
       book_id: b.bookId,
-      cfi: b.cfi,
+      locator: b.locator,
       label: b.label,
       created_at: b.createdAt.toISOString(),
     })),
@@ -76,7 +76,7 @@ export interface BookmarkedBook {
   status: string;
   genres: string[];
   progress_percent: number;
-  progress_cfi: string | null;
+  progress_locator: string | null;
   last_opened_at: string | null;
   created_at: string;
   bookmark_count: number;
@@ -105,7 +105,7 @@ export async function listBookmarkedBooks(
     status: b.status || 'unread',
     genres: b.genres || [],
     progress_percent: b.progressPercent,
-    progress_cfi: b.progressCfi ?? null,
+    progress_locator: b.progressLocator ?? null,
     last_opened_at: b.lastOpenedAt?.toISOString() ?? null,
     created_at: b.createdAt.toISOString(),
     bookmark_count: b.bookmarks.length,

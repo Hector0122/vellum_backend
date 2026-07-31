@@ -19,11 +19,11 @@ export async function listBookmarks(req: AuthenticatedRequest, res: Response) {
 
 export async function createBookmark(req: AuthenticatedRequest, res: Response) {
   try {
-    const { cfi, label } = req.body;
+    const { locator, label } = req.body;
     const bookmark = await bookmarksService.createBookmark(
       req.userId!,
       req.params.bookId,
-      cfi,
+      locator,
       label,
     );
     res.status(201).json({ bookmark });

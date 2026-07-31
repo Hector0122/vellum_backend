@@ -37,7 +37,7 @@ model Book {
   status          String    @default("unread") @map("status")
   genres          String[]  @default([]) @map("genres")
   progressPercent Int       @default(0) @map("progress_percent")
-  progressCfi     String?   @map("progress_cfi")
+  progressLocator String?   @map("progress_locator")
   currentPage     Int       @default(0) @map("current_page")
   totalPages      Int?      @map("total_pages")
   lastOpenedAt    DateTime? @map("last_opened_at")
@@ -59,7 +59,7 @@ model Highlight {
   userId    String   @map("user_id") @db.Uuid
   bookId    String   @map("book_id") @db.Uuid
   text      String
-  location  String
+  locator   String
   color     String   @default("#FFD700")
   createdAt DateTime @default(now()) @map("created_at")
   profile   Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -89,7 +89,7 @@ model Bookmark {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
   bookId    String   @map("book_id") @db.Uuid
-  cfi       String
+  locator   String
   label     String?
   createdAt DateTime @default(now()) @map("created_at")
   profile   Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)

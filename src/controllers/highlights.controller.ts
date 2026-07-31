@@ -18,13 +18,13 @@ export async function listHighlights(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function createHighlight(req: AuthenticatedRequest, res: Response) {
-  const { text, location, color } = req.body;
+  const { text, locator, color } = req.body;
 
   try {
     const highlight = await highlightsService.createHighlight(req.userId!, {
       book_id: req.params.bookId,
       text,
-      location,
+      locator,
       color,
     });
     res.status(201).json({ highlight });
