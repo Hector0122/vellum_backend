@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import authRoutes from './routes/auth.routes';
 import bookRoutes from './routes/books.routes';
 import uploadRoutes from './routes/upload.routes';
@@ -16,6 +17,8 @@ import { errorHandler } from './middleware/errorHandler';
 const app: express.Application = express();
 
 app.set('trust proxy', 1);
+
+app.use(helmet());
 
 // ALLOWED_ORIGINS is a comma-separated allowlist (e.g. "https://vellum.app,https://staging.vellum.app").
 // Left unset, cors() falls back to its permissive default (reflect any origin) — the same
