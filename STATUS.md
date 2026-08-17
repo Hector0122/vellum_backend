@@ -179,6 +179,17 @@
 - [x] Panel inferior con resumen en 3-5 bullet points, scrollable (ScrollView con maxHeight fijo — ojo: `flex:1` en un ScrollView dentro de un panel con solo `maxHeight` colapsa a 0 en RN/Yoga, ya lo pisamos una vez)
 - [x] Caché automático por capítulo en DB
 
+#### Documentos multi-formato: PDF & Markdown 📄 🔄 (`openspec/changes/add-multi-format-documents`)
+- [x] `Book.fileType` ampliado a `'epub' | 'pdf' | 'md'` (antes `'pdf'` ya existía a medias en el tipo pero ningún path lo manejaba de verdad — `cover.service.ts`/`summaries.service.ts` llamaban a `epub-parser` sin condicionar)
+- [x] `src/lib/pdf.ts` (nuevo): conteo de páginas, thumbnail de portada (1ª página → PNG) y extracción de texto por página/rango, vía `pdfjs-dist` + `canvas` (ESM-only, cargado con `import()` dinámico desde este backend CJS + polyfill de `DOMMatrix`/`DOMPoint`/`ImageData`)
+- [x] `src/lib/markdown.ts` (nuevo): title-card generado como portada (Markdown no tiene portada embebida) y extracción de texto por sección delimitada por heading, vía `marked`
+- [x] `cover.service.ts` y `summaries.service.ts` ahora despachan por `fileType` en vez de asumir siempre EPUB
+- [x] Validación de upload (`upload.controller.ts`, `upload.service.ts`, Zod en `validation.ts`) acepta `'md'`
+- [x] Verificado con un PDF real (generado con `cupsfilter` de macOS, no solo un PDF sintético) — extracción de texto, conteo de páginas y thumbnail confirmados funcionando de punta a punta
+- [x] Frontend: lector PDF (`react-native-pdf`, page-based) y lector Markdown (`react-native-markdown-display`, block-based) nuevos, `ReaderScreen.tsx` es ahora un dispatcher fino por `fileType`; sección Library dividida en tabs Books/PDFs/Notes que nunca mezclan formatos
+- [x] Highlights de PDF y Markdown son a nivel de página/bloque, no de rango de texto exacto — ver `design.md` del change para el porqué (sin capa de texto seleccionable en render nativo de PDF; renderer de Markdown construye un árbol de views nativas, no texto plano seleccionable)
+- [ ] **Android verificado** (`yarn android:build` exitoso), **iOS pendiente** — `pod install` falla en este entorno por un problema preexistente no relacionado (parece el espacio en el path del repo, `.../Personal Projects/...`, rompiendo la descarga de un tarball interno de RN 0.85.3)
+- [ ] **Falta QA manual en dispositivo real** — todo lo anterior está verificado por `tsc --noEmit`, la suite de Jest, y un bundle de Metro en modo release, pero no probado interactivamente tocando la UI
 
 ---
 
