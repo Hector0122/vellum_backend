@@ -22,10 +22,16 @@ export async function generateCover(req: AuthenticatedRequest, res: Response) {
 
     const objectKey = book.file_url.replace(`${env.R2_PUBLIC_URL}/`, '');
 
-    const coverUrl = await extractCover(objectKey, req.userId!);
+    const coverUrl = await extractCover(objectKey, req.userId!, book.file_type, book.title);
 
     if (!coverUrl) {
-      res.status(404).json({ error: 'No cover found in EPUB' });
+      const message =
+        book.file_type === 'epub'
+          ? 'No cover found in EPUB'
+          : book.file_type === 'pdf'
+            ? 'Could not generate a cover thumbnail for this PDF'
+            : 'Could not generate a cover for this document';
+      res.status(404).json({ error: message });
       return;
     }
 

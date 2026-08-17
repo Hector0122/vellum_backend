@@ -2,6 +2,33 @@ import { prisma } from '../lib/db';
 import { callGroq, callGemini } from '../lib/ai';
 import { getObject, extractObjectKey } from '../lib/r2';
 import { extractChapterText } from '../lib/epub';
+import * as pdfLib from '../lib/pdf';
+import * as markdownLib from '../lib/markdown';
+
+// `href` is a format-agnostic section reference: an EPUB manifest href, a
+// PDF page number/range ("12" or "12-20"), or a 0-indexed Markdown heading
+// section — see design.md Decision 3/4 and each lib module for the exact
+// shape each format expects.
+async function extractSectionText(
+  fileType: 'epub' | 'pdf' | 'md',
+  fileBuffer: Buffer,
+  href: string,
+): Promise<string> {
+  try {
+    if (fileType === 'epub') return await extractChapterText(fileBuffer, href);
+    if (fileType === 'pdf') return await pdfLib.extractSectionText(fileBuffer, href);
+    return await markdownLib.extractSectionText(fileBuffer, href);
+  } catch (err: any) {
+    // Covers e.g. a scanned image-only PDF with no text layer, or any other
+    // extraction failure — surface a clear, actionable error instead of
+    // summarizing empty/garbled text. See
+    // specs/pdf-document-support/spec.md "Summary request on unextractable
+    // PDF fails gracefully".
+    throw new Error(
+      `Could not extract text for this section: ${err.message || 'unknown extraction error'}`,
+    );
+  }
+}
 
 export async function summarizeChapter(
   userId: string,
@@ -11,7 +38,7 @@ export async function summarizeChapter(
 ) {
   const book = await prisma.book.findFirst({
     where: { id: bookId, userId },
-    select: { fileUrl: true },
+    select: { fileUrl: true, fileType: true },
   });
   if (!book) throw new Error('Book not found');
 
@@ -29,7 +56,11 @@ export async function summarizeChapter(
   if (!objectKey) throw new Error('Book file not found in storage');
 
   const fileBuffer = await getObject(objectKey);
-  const chapterText = await extractChapterText(fileBuffer, href);
+  const chapterText = await extractSectionText(
+    book.fileType as 'epub' | 'pdf' | 'md',
+    fileBuffer,
+    href,
+  );
 
   // Cover/title/blank pages extract to little or no prose — don't waste an AI
   // call (or worse, silently cache an empty/useless summary) on those.

@@ -57,7 +57,7 @@ export async function createBook(
     description?: string;
     cover_url?: string;
     file_url: string;
-    file_type: 'epub' | 'pdf';
+    file_type: 'epub' | 'pdf' | 'md';
     total_pages?: number;
   },
 ): Promise<BookRecord> {

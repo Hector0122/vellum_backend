@@ -33,7 +33,7 @@ model Book {
   description     String?
   coverUrl        String?   @map("cover_url")
   fileUrl         String    @map("file_url")
-  fileType        String    @map("file_type")
+  fileType        String    @map("file_type") // 'epub' | 'pdf' | 'md' (app-level union, not a DB enum)
   status          String    @default("unread") @map("status")
   genres          String[]  @default([]) @map("genres")
   progressPercent Int       @default(0) @map("progress_percent")

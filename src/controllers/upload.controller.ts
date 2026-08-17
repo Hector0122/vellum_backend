@@ -10,8 +10,8 @@ export async function requestUpload(req: AuthenticatedRequest, res: Response) {
     return;
   }
 
-  if (!['epub', 'pdf'].includes(fileType)) {
-    res.status(400).json({ error: 'fileType must be "epub" or "pdf"' });
+  if (!['epub', 'pdf', 'md'].includes(fileType)) {
+    res.status(400).json({ error: 'fileType must be "epub", "pdf", or "md"' });
     return;
   }
 

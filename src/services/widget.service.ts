@@ -37,7 +37,7 @@ export async function getWidgetData(
       description: book.description,
       cover_url: book.coverUrl,
       file_url: book.fileUrl,
-      file_type: book.fileType as 'epub' | 'pdf',
+      file_type: book.fileType as 'epub' | 'pdf' | 'md',
       status: (book.status || 'unread') as 'unread' | 'reading' | 'read',
       genres: book.genres || [],
       progress_percent: book.progressPercent,

@@ -34,7 +34,7 @@ export const createBookSchema = z.object({
   description: z.string().optional(),
   cover_url: z.string().url('Invalid cover URL').optional().or(z.literal(null)),
   file_url: z.string().url('Invalid file URL'),
-  file_type: z.enum(['epub', 'pdf']),
+  file_type: z.enum(['epub', 'pdf', 'md']),
 });
 
 export const updateBookSchema = z.object({

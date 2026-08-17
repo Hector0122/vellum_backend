@@ -20,7 +20,7 @@ export interface BookRecord {
   description: string | null;
   cover_url: string | null;
   file_url: string;
-  file_type: 'epub' | 'pdf';
+  file_type: 'epub' | 'pdf' | 'md';
   status: 'unread' | 'reading' | 'read';
   genres: string[];
   progress_percent: number;
